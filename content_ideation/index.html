@@ -1,0 +1,891 @@
+<title>Clickster Content Console</title>
+<style>
+  :root {
+    --bg: #0a0f16;
+    --surface: #121a24;
+    --surface-2: #1a2530;
+    --line: #263140;
+    --line-soft: #1c2733;
+    --text: #e6edf3;
+    --text-muted: #90a3b5;
+    --text-dim: #5d7186;
+    --arc: #35e0ff;
+    --arc-dim: #1c7d91;
+    --repulsor: #ff9a3d;
+    --repulsor-dim: #8f5320;
+    --good: #4ede97;
+    --warn: #ffcf5c;
+    --crit: #ff5c5c;
+    --cut: 14px;
+    --cut-sm: 9px;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      linear-gradient(180deg, rgba(53,224,255,0.05), transparent 320px),
+      radial-gradient(1200px 500px at 85% -10%, rgba(255,154,61,0.06), transparent 60%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--arc-dim); color: var(--text); }
+
+  a { color: var(--arc); }
+
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .eyebrow {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    clip-path: polygon(
+      var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)),
+      calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut)
+    );
+  }
+
+  .panel-sm {
+    clip-path: polygon(
+      var(--cut-sm) 0, 100% 0, 100% calc(100% - var(--cut-sm)),
+      calc(100% - var(--cut-sm)) 100%, 0 100%, 0 var(--cut-sm)
+    );
+  }
+
+  button, select, input {
+    font: inherit;
+    color: inherit;
+  }
+
+  button:focus-visible, select:focus-visible, input:focus-visible, .chip:focus-visible {
+    outline: 2px solid var(--arc);
+    outline-offset: 2px;
+  }
+
+  .console {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 20px 16px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  /* ---------- Topbar ---------- */
+
+  .topbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .brand-mark {
+    display: block;
+    font-weight: 800;
+    font-size: 1.7rem;
+    letter-spacing: 0.04em;
+  }
+
+  .brand-mark::after {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-left: 8px;
+    background: var(--arc);
+    box-shadow: 0 0 10px 2px var(--arc-dim);
+    border-radius: 1px;
+    vertical-align: middle;
+  }
+
+  .brand-sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .stat-strip {
+    display: flex;
+    gap: 22px;
+    margin: 0;
+  }
+
+  .stat-strip div { text-align: right; }
+
+  .stat-strip dt {
+    margin: 0;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .stat-strip dd {
+    margin: 2px 0 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  /* ---------- Alert ---------- */
+
+  .alert {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: start;
+    padding: 14px 16px;
+    background: linear-gradient(90deg, rgba(255,92,92,0.12), rgba(255,92,92,0.03));
+    border: 1px solid #5a2a2a;
+  }
+
+  .alert-glyph {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--crit);
+    color: #200;
+    font-weight: 900;
+    font-size: 0.95rem;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+
+  .alert-body strong {
+    display: block;
+    font-size: 0.95rem;
+    margin-bottom: 3px;
+  }
+
+  .alert-body p {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    max-width: 62ch;
+  }
+
+  .alert-body .as-of {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+
+  .alert-dismiss {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-muted);
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .alert-dismiss:hover { color: var(--text); border-color: var(--text-muted); }
+
+  /* ---------- Insights ---------- */
+
+  .insights {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .insight-card {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .insight-card .eyebrow { color: var(--arc); }
+  .insight-card--warn .eyebrow { color: var(--repulsor); }
+
+  .insight-metric {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    font-size: 1.7rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .insight-metric span {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-left: 2px;
+  }
+
+  .insight-card p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* ---------- Board ---------- */
+
+  .board-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-size: 0.95rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin: 0;
+    font-weight: 800;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text-muted);
+    padding: 5px 11px;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    clip-path: polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px);
+  }
+
+  .chip[aria-pressed="true"] {
+    background: var(--arc-dim);
+    border-color: var(--arc);
+    color: var(--text);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .idea-card {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .idea-card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .idea-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border: 1px solid var(--line);
+    padding: 2px 7px;
+  }
+
+  .idea-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .idea-rationale {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .status-pill {
+    align-self: flex-start;
+    margin-top: auto;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 10px 5px 20px;
+    position: relative;
+    cursor: pointer;
+    color: var(--text-muted);
+  }
+
+  .status-pill::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--text-dim);
+  }
+
+  .status-pill[data-status="planned"] { color: var(--arc); border-color: var(--arc-dim); }
+  .status-pill[data-status="planned"]::before { background: var(--arc); box-shadow: 0 0 6px var(--arc); }
+  .status-pill[data-status="filming"] { color: var(--repulsor); border-color: var(--repulsor-dim); }
+  .status-pill[data-status="filming"]::before { background: var(--repulsor); box-shadow: 0 0 6px var(--repulsor); }
+  .status-pill[data-status="posted"] { color: var(--good); border-color: #1e5c3e; }
+  .status-pill[data-status="posted"]::before { background: var(--good); box-shadow: 0 0 6px var(--good); }
+
+  .add-form {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 8px;
+  }
+
+  .add-form input, .add-form select {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 9px 10px;
+    font-size: 0.85rem;
+  }
+
+  .add-form input { min-width: 0; }
+
+  .add-form button {
+    background: var(--arc);
+    color: #06222a;
+    border: none;
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0 16px;
+    cursor: pointer;
+    clip-path: polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+  }
+  .add-form button:hover { background: #6de9ff; }
+
+  /* ---------- Generator ---------- */
+
+  .generator {
+    padding: 18px 18px 20px;
+  }
+
+  .generator-sub {
+    margin: 4px 0 16px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    max-width: 56ch;
+  }
+
+  .configurator {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .config-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .config-group label {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .config-group select {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 8px 9px;
+    font-size: 0.82rem;
+  }
+
+  .generate-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  #generateBtn {
+    background: var(--repulsor);
+    color: #2a1300;
+    border: none;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 11px 20px;
+    cursor: pointer;
+    clip-path: polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);
+  }
+  #generateBtn:hover { background: #ffb266; }
+
+  .readout {
+    flex: 1 1 260px;
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px dashed var(--line);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .readout-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .readout-actions button {
+    background: transparent;
+    border: 1px solid var(--arc-dim);
+    color: var(--arc);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .readout-actions button:hover { background: var(--arc-dim); color: var(--text); }
+
+  footer.note {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-align: center;
+    padding-top: 8px;
+  }
+
+  @media (max-width: 720px) {
+    .insights { grid-template-columns: repeat(2, 1fr); }
+    .grid { grid-template-columns: 1fr; }
+    .configurator { grid-template-columns: 1fr; }
+    .add-form { grid-template-columns: 1fr; }
+    .stat-strip { gap: 14px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="console">
+
+  <header class="topbar">
+    <div>
+      <span class="brand-mark">CLICKSTER</span>
+      <span class="brand-sub">Content Console — idea board &amp; channel snapshot</span>
+    </div>
+    <dl class="stat-strip mono">
+      <div><dt>Subs</dt><dd>133K</dd></div>
+      <div><dt>Views</dt><dd>29.06M</dd></div>
+      <div><dt>Videos</dt><dd>334</dd></div>
+    </dl>
+  </header>
+
+  <div class="alert panel" id="videoAlert">
+    <div class="alert-glyph">!</div>
+    <div class="alert-body">
+      <strong>83 videos vanished between Jul 17–19</strong>
+      <p>Video count dropped 417 → 334 and lifetime views fell roughly 1.23M in two days, then held steady. If this wasn't a manual cleanup, check YouTube Studio → Content (filter Removed/Private) and your Copyright/Community Guidelines page.</p>
+      <span class="as-of">Snapshot from vidIQ, Jul 21, 2026</span>
+    </div>
+    <button class="alert-dismiss" id="dismissAlert" aria-label="Dismiss alert">×</button>
+  </div>
+
+  <section class="insights" aria-label="Channel insights">
+    <article class="insight-card panel panel-sm">
+      <div class="eyebrow">Rising</div>
+      <div class="insight-metric">2.4<span>% likes</span></div>
+      <p>Project Mechanic uploads post your strongest recent like rate — nearly 3× the VR video.</p>
+    </article>
+    <article class="insight-card insight-card--warn panel panel-sm">
+      <div class="eyebrow">Cooling</div>
+      <div class="insight-metric">0.50<span>/1k</span></div>
+      <p>Your newest video, the VR Iron Man pivot, has the lowest comment rate of any recent upload.</p>
+    </article>
+    <article class="insight-card panel panel-sm">
+      <div class="eyebrow">Gap</div>
+      <div class="insight-metric mono" id="daysSinceShort">—</div>
+      <p>Since your last Short — historically your highest views-per-video format.</p>
+    </article>
+    <article class="insight-card insight-card--warn panel panel-sm">
+      <div class="eyebrow">Watch, not talk</div>
+      <div class="insight-metric">0.56<span>/1k</span></div>
+      <p>Flashpoint speed-runs pull strong views but the weakest comment density around.</p>
+    </article>
+  </section>
+
+  <section class="board" aria-label="Idea board">
+    <div class="board-head">
+      <h2>Idea Board</h2>
+      <div class="filters" id="filters"></div>
+    </div>
+    <div class="grid" id="ideaGrid"></div>
+    <form class="add-form" id="addForm">
+      <input id="newTitle" type="text" placeholder="New video idea…" required maxlength="120" />
+      <select id="newCategory"></select>
+      <select id="newFormat">
+        <option value="long">Long</option>
+        <option value="short">Short</option>
+      </select>
+      <button type="submit">Add</button>
+    </form>
+  </section>
+
+  <section class="generator panel" aria-label="Idea generator">
+    <h2>Suit Configurator</h2>
+    <p class="generator-sub">Spin up a fresh title from your own game lineup instead of staring at a blank doc.</p>
+    <div class="configurator" id="configurator"></div>
+    <div class="generate-row">
+      <button id="generateBtn" type="button">Generate title</button>
+      <div class="readout" id="readout" hidden>
+        <div id="readoutText"></div>
+        <div class="readout-actions">
+          <button type="button" id="addGenerated">Add to board</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="note">Local to this device — ideas and statuses are saved in this browser only.</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORE_IDEAS = "clickster-ideas-v1";
+  var STORE_DISMISS = "clickster-alert-dismissed-v1";
+  var STORE_FILTER = "clickster-filter-v1";
+
+  var CATEGORIES = ["Project Mechanic", "Iron Man Reimagined", "Flashpoint", "Shorts Revival", "Community & Crossover"];
+  var STATUS_CYCLE = ["idea", "planned", "filming", "posted"];
+
+  var SEED_IDEAS = [
+    {
+      id: "seed-1",
+      title: "I Tried Every Suit in Project Mechanic",
+      category: "Project Mechanic",
+      format: "long",
+      rationale: "Project Mechanic has your highest recent like and comment rates — a full suit tour rides that momentum.",
+      status: "idea"
+    },
+    {
+      id: "seed-2",
+      title: "Ranking Every Iron Man Reimagined Suit, Worst to Best",
+      category: "Iron Man Reimagined",
+      format: "long",
+      rationale: "Tier-list framing reliably drives comment arguments — your suit-comparison videos already do 200+ comments.",
+      status: "idea"
+    },
+    {
+      id: "seed-3",
+      title: "The Fastest Way to Max Level in Flashpoint (2026 Update)",
+      category: "Flashpoint",
+      format: "long",
+      rationale: "Flashpoint pulls views but the weakest comment density around — a how-to gives viewers something to ask about.",
+      status: "idea"
+    },
+    {
+      id: "seed-4",
+      title: "Flying to Every Planet in Project Mechanic, Ranked by Speed",
+      category: "Project Mechanic",
+      format: "long",
+      rationale: "Combines your two strongest recent hooks — Project Mechanic and a space-flight comparison — into one video.",
+      status: "idea"
+    },
+    {
+      id: "seed-5",
+      title: "This Roblox Suit Flies Faster Than a Jet",
+      category: "Shorts Revival",
+      format: "short",
+      rationale: "No Short posted in over a year, despite Shorts historically hitting 400K–660K views on 15–20 second clips.",
+      status: "idea"
+    },
+    {
+      id: "seed-6",
+      title: "POV: You Just Got the New Project Mechanic Suit",
+      category: "Shorts Revival",
+      format: "short",
+      rationale: "A quick cut from your best-performing recent game, sized for the format that used to outperform long-form per video.",
+      status: "idea"
+    },
+    {
+      id: "seed-7",
+      title: "I Tested the VR Iron Man Suit... Then Went Back to Roblox",
+      category: "Community & Crossover",
+      format: "long",
+      rationale: "Your VR pivot had the weakest engagement of any recent upload — bridge it back to the Roblox content your audience actually reacts to.",
+      status: "idea"
+    },
+    {
+      id: "seed-8",
+      title: "Building the Ultimate Suit With Viewer Votes",
+      category: "Iron Man Reimagined",
+      format: "long",
+      rationale: "An explicit voting format is designed to push comments higher on a category that already performs.",
+      status: "idea"
+    }
+  ];
+
+  var GEN_GAMES = ["Iron Man Reimagined", "Flashpoint", "Project Mechanic", "Roblox Spider-Man", "Web-Verse"];
+  var GEN_HOOKS = ["I Tried Every", "The Fastest", "The Most Realistic", "Ranking Every", "Can I Survive With The Weakest", "24 Hours As The", "I Tested The New"];
+  var GEN_SUBJECTS = ["Suit", "Speedster Build", "Space Flight Route", "Suit Upgrade", "Community Suit Design"];
+
+  var GAME_TO_CATEGORY = {
+    "Iron Man Reimagined": "Iron Man Reimagined",
+    "Flashpoint": "Flashpoint",
+    "Project Mechanic": "Project Mechanic",
+    "Roblox Spider-Man": "Community & Crossover",
+    "Web-Verse": "Community & Crossover"
+  };
+
+  function load(key, fallback) {
+    try {
+      var raw = window.localStorage.getItem(key);
+      return raw === null ? fallback : JSON.parse(raw);
+    } catch (e) { return fallback; }
+  }
+
+  function save(key, value) {
+    try { window.localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+
+  var ideas = load(STORE_IDEAS, null);
+  if (!ideas) { ideas = SEED_IDEAS.slice(); save(STORE_IDEAS, ideas); }
+
+  var activeFilter = load(STORE_FILTER, "All");
+
+  // ---- Days since last Short ----
+  var lastShort = new Date("2025-07-07T00:24:36Z");
+  var daysSince = Math.floor((Date.now() - lastShort.getTime()) / 86400000);
+  document.getElementById("daysSinceShort").textContent = daysSince + "d";
+
+  // ---- Alert dismiss ----
+  var alertEl = document.getElementById("videoAlert");
+  if (load(STORE_DISMISS, false)) { alertEl.style.display = "none"; }
+  document.getElementById("dismissAlert").addEventListener("click", function () {
+    alertEl.style.display = "none";
+    save(STORE_DISMISS, true);
+  });
+
+  // ---- Filters ----
+  var filtersEl = document.getElementById("filters");
+  function renderFilters() {
+    filtersEl.innerHTML = "";
+    ["All"].concat(CATEGORIES).forEach(function (cat) {
+      var btn = document.createElement("button");
+      btn.className = "chip";
+      btn.type = "button";
+      btn.textContent = cat;
+      btn.setAttribute("aria-pressed", String(cat === activeFilter));
+      btn.addEventListener("click", function () {
+        activeFilter = cat;
+        save(STORE_FILTER, activeFilter);
+        renderFilters();
+        renderGrid();
+      });
+      filtersEl.appendChild(btn);
+    });
+  }
+
+  // ---- Idea grid ----
+  var gridEl = document.getElementById("ideaGrid");
+
+  function nextStatus(s) {
+    var i = STATUS_CYCLE.indexOf(s);
+    return STATUS_CYCLE[(i + 1) % STATUS_CYCLE.length];
+  }
+
+  function renderGrid() {
+    gridEl.innerHTML = "";
+    var visible = ideas.filter(function (idea) {
+      return activeFilter === "All" || idea.category === activeFilter;
+    });
+
+    if (visible.length === 0) {
+      var empty = document.createElement("p");
+      empty.style.color = "var(--text-muted)";
+      empty.style.fontSize = "0.85rem";
+      empty.textContent = "No ideas in this category yet — add one below.";
+      gridEl.appendChild(empty);
+      return;
+    }
+
+    visible.forEach(function (idea) {
+      var card = document.createElement("article");
+      card.className = "idea-card panel panel-sm";
+
+      var top = document.createElement("div");
+      top.className = "idea-card-top";
+
+      var tags = document.createElement("div");
+      tags.className = "idea-tags";
+      var catTag = document.createElement("span");
+      catTag.className = "tag";
+      catTag.textContent = idea.category;
+      var fmtTag = document.createElement("span");
+      fmtTag.className = "tag";
+      fmtTag.textContent = idea.format;
+      tags.appendChild(catTag);
+      tags.appendChild(fmtTag);
+      top.appendChild(tags);
+      card.appendChild(top);
+
+      var title = document.createElement("p");
+      title.className = "idea-title";
+      title.textContent = idea.title;
+      card.appendChild(title);
+
+      if (idea.rationale) {
+        var rationale = document.createElement("p");
+        rationale.className = "idea-rationale";
+        rationale.textContent = idea.rationale;
+        card.appendChild(rationale);
+      }
+
+      var pill = document.createElement("button");
+      pill.type = "button";
+      pill.className = "status-pill";
+      pill.setAttribute("data-status", idea.status);
+      pill.textContent = idea.status;
+      pill.addEventListener("click", function () {
+        idea.status = nextStatus(idea.status);
+        save(STORE_IDEAS, ideas);
+        renderGrid();
+      });
+      card.appendChild(pill);
+
+      gridEl.appendChild(card);
+    });
+  }
+
+  // ---- Add form ----
+  var categorySelect = document.getElementById("newCategory");
+  CATEGORIES.forEach(function (cat) {
+    var opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    categorySelect.appendChild(opt);
+  });
+
+  document.getElementById("addForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var titleInput = document.getElementById("newTitle");
+    var title = titleInput.value.trim();
+    if (!title) return;
+    ideas.push({
+      id: "custom-" + Date.now(),
+      title: title,
+      category: categorySelect.value,
+      format: document.getElementById("newFormat").value,
+      rationale: "",
+      status: "idea"
+    });
+    save(STORE_IDEAS, ideas);
+    titleInput.value = "";
+    renderGrid();
+  });
+
+  // ---- Generator ----
+  var configEl = document.getElementById("configurator");
+  function buildSelect(id, labelText, options) {
+    var wrap = document.createElement("div");
+    wrap.className = "config-group";
+    var label = document.createElement("label");
+    label.textContent = labelText;
+    label.setAttribute("for", id);
+    var select = document.createElement("select");
+    select.id = id;
+    options.forEach(function (opt) {
+      var o = document.createElement("option");
+      o.value = opt;
+      o.textContent = opt;
+      select.appendChild(o);
+    });
+    wrap.appendChild(label);
+    wrap.appendChild(select);
+    configEl.appendChild(wrap);
+    return select;
+  }
+
+  var hookSelect = buildSelect("genHook", "Hook", ["Random"].concat(GEN_HOOKS));
+  var gameSelect = buildSelect("genGame", "Game", ["Random"].concat(GEN_GAMES));
+  var subjectSelect = buildSelect("genSubject", "Subject", ["Random"].concat(GEN_SUBJECTS));
+
+  function pick(list, chosen) {
+    if (chosen && chosen !== "Random") return chosen;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  var readoutEl = document.getElementById("readout");
+  var readoutTextEl = document.getElementById("readoutText");
+  var currentGenerated = null;
+
+  document.getElementById("generateBtn").addEventListener("click", function () {
+    var hook = pick(GEN_HOOKS, hookSelect.value);
+    var game = pick(GEN_GAMES, gameSelect.value);
+    var subject = pick(GEN_SUBJECTS, subjectSelect.value);
+    var title = hook + " " + game + " " + subject;
+    currentGenerated = { title: title, game: game };
+    readoutTextEl.textContent = title;
+    readoutEl.hidden = false;
+  });
+
+  document.getElementById("addGenerated").addEventListener("click", function () {
+    if (!currentGenerated) return;
+    ideas.push({
+      id: "gen-" + Date.now(),
+      title: currentGenerated.title,
+      category: GAME_TO_CATEGORY[currentGenerated.game] || "Community & Crossover",
+      format: "long",
+      rationale: "",
+      status: "idea"
+    });
+    save(STORE_IDEAS, ideas);
+    renderGrid();
+    readoutEl.hidden = true;
+    currentGenerated = null;
+  });
+
+  renderFilters();
+  renderGrid();
+})();
+</script>
