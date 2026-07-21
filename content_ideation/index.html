@@ -209,7 +209,7 @@
 
   .insights {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 10px;
   }
 
@@ -236,6 +236,8 @@
     font-weight: 500;
     margin-left: 2px;
   }
+
+  .insight-metric--text { font-size: 1.15rem; }
 
   .insight-card p {
     margin: 0;
@@ -550,6 +552,11 @@
       <div class="insight-metric">0.56<span>/1k</span></div>
       <p>Flashpoint speed-runs pull strong views but the weakest comment density around.</p>
     </article>
+    <article class="insight-card panel panel-sm">
+      <div class="eyebrow">Trend window</div>
+      <div class="insight-metric insight-metric--text">Now → Aug</div>
+      <p>Spider-Man: Brand New Day content is exploding elsewhere — cast-react videos ~2,900 VPH, trailer breakdowns ~940 VPH. That search traffic should spill into Roblox Spider-Man games within the month.</p>
+    </article>
   </section>
 
   <section class="board" aria-label="Idea board">
@@ -595,7 +602,7 @@
   var STORE_DISMISS = "clickster-alert-dismissed-v1";
   var STORE_FILTER = "clickster-filter-v1";
 
-  var CATEGORIES = ["Project Mechanic", "Iron Man Reimagined", "Flashpoint", "Shorts Revival", "Community & Crossover"];
+  var CATEGORIES = ["Project Mechanic", "Spider-Man: Brand New Day", "Iron Man Reimagined", "Flashpoint", "Shorts Revival", "Community & Crossover"];
   var STATUS_CYCLE = ["idea", "planned", "filming", "posted"];
 
   var SEED_IDEAS = [
@@ -662,10 +669,50 @@
       format: "long",
       rationale: "An explicit voting format is designed to push comments higher on a category that already performs.",
       status: "idea"
+    },
+    {
+      id: "seed-9",
+      title: "The BEST Roblox Spider-Man Game Yet…",
+      category: "Spider-Man: Brand New Day",
+      format: "long",
+      rationale: "Retargets your 872K-view, 13.8x-breakout Iron Man format at the Brand New Day movie moment — your 2024 Spider-Man take only hit 51K, but the timing is now.",
+      status: "idea"
+    },
+    {
+      id: "seed-10",
+      title: "I Tried EVERY Spider-Man Suit in Roblox",
+      category: "Spider-Man: Brand New Day",
+      format: "long",
+      rationale: "Your \"I Tried Every Suit\" format was your #2 all-time breakout (554K views, 6.8x) — add the Brand New Day suit the moment any game ships it.",
+      status: "idea"
+    },
+    {
+      id: "seed-11",
+      title: "I Became SPIDER-MAN In VR For 24 Hours!",
+      category: "Spider-Man: Brand New Day",
+      format: "long",
+      rationale: "Direct sequel to your best sustained performer (~140 VPH six weeks post-upload) — merges your hottest format with the hottest character right as Brand New Day peaks.",
+      status: "idea"
+    },
+    {
+      id: "seed-12",
+      title: "Noob to Max Suit in Iron Man Reimagined, No Robux",
+      category: "Iron Man Reimagined",
+      format: "long",
+      rationale: "Noob-to-pro progression videos are outperforming their channels by 40–130x across the Roblox niche right now.",
+      status: "idea"
+    },
+    {
+      id: "seed-13",
+      title: "The BEST Roblox Iron Man Games of 2026 (Ranked)",
+      category: "Iron Man Reimagined",
+      format: "long",
+      rationale: "A refresh of your top-performing ranked format for your core audience, and evergreen search bait.",
+      status: "idea"
     }
   ];
 
-  var GEN_GAMES = ["Iron Man Reimagined", "Flashpoint", "Project Mechanic", "Roblox Spider-Man", "Web-Verse"];
+  var GEN_GAMES = ["Iron Man Reimagined", "Flashpoint", "Project Mechanic", "Roblox Spider-Man", "Spider-Man: Brand New Day", "Web-Verse"];
   var GEN_HOOKS = ["I Tried Every", "The Fastest", "The Most Realistic", "Ranking Every", "Can I Survive With The Weakest", "24 Hours As The", "I Tested The New"];
   var GEN_SUBJECTS = ["Suit", "Speedster Build", "Space Flight Route", "Suit Upgrade", "Community Suit Design"];
 
@@ -674,6 +721,7 @@
     "Flashpoint": "Flashpoint",
     "Project Mechanic": "Project Mechanic",
     "Roblox Spider-Man": "Community & Crossover",
+    "Spider-Man: Brand New Day": "Spider-Man: Brand New Day",
     "Web-Verse": "Community & Crossover"
   };
 
@@ -689,7 +737,16 @@
   }
 
   var ideas = load(STORE_IDEAS, null);
-  if (!ideas) { ideas = SEED_IDEAS.slice(); save(STORE_IDEAS, ideas); }
+  if (!ideas) {
+    ideas = SEED_IDEAS.slice();
+  } else {
+    var existingIds = {};
+    ideas.forEach(function (i) { existingIds[i.id] = true; });
+    SEED_IDEAS.forEach(function (seed) {
+      if (!existingIds[seed.id]) ideas.push(seed);
+    });
+  }
+  save(STORE_IDEAS, ideas);
 
   var activeFilter = load(STORE_FILTER, "All");
 
