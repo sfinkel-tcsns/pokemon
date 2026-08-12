@@ -3,20 +3,30 @@
 A personal life-management dashboard — starting with your calendar as the backbone,
 with room to grow into tasks, habits, notes, and money.
 
-This first version is a **calendar dashboard** seeded with your real Google Calendar
-events. No build step, no server required.
+It's a **calendar dashboard** that runs two ways:
+
+- **Live** — connect your Google account and it shows current data, self-refreshing.
+- **Snapshot** — a seeded copy of your calendar that works offline with zero setup,
+  and is the automatic fallback when you're not connected.
+
+No build step, no backend.
 
 ## Run it
 
-Just open `index.html` in a browser (double-click it, or drag it into a tab).
+**Quick look (snapshot):** open `index.html` in a browser (double-click it).
 
-Prefer a local server (nicer, and required later when we add live data)?
+**Live sync (recommended):** do the one-time Google setup in **[SETUP.md](SETUP.md)**,
+then serve the folder and open the localhost URL:
 
 ```bash
 cd pokemon
 python3 -m http.server 8000
-# then visit http://localhost:8000
+# then visit http://localhost:8000 and click "Connect Google Calendar"
 ```
+
+Live sync must be served over http (not `file://`) — that's a Google sign-in
+requirement. The footer shows which mode you're in: **live · <time>** or
+**snapshot · <date>**.
 
 ## What's here
 
@@ -37,10 +47,17 @@ life-**category**, auto-derived from its title (see `categorize()` in `app.js`):
 - **Briefs** covers all-day items — holidays, birthdays, and the news/coach cards.
 - **Work / Rest** drive the "focus / work" and "scheduled load" stats.
 
-## Data & refreshing
+## Live sync
 
-The calendar data is assembled by `data/build.js` from two snapshots into the files
-the page loads:
+When you click **Connect Google Calendar**, the page uses Google Identity Services
+(browser OAuth, read-only) to pull every calendar via the Calendar API and merge them
+into the same unified view — no server involved. `google.js` handles auth + fetching;
+`config.js` holds your Client ID and options. Setup steps are in **[SETUP.md](SETUP.md)**.
+
+## Snapshot data & refreshing
+
+The offline snapshot is assembled by `data/build.js` from two files into what the page
+loads as a fallback:
 
 - `data/primary.json` — your primary Google Calendar snapshot.
 - `data/secondary.json` — the other calendars (Delt, sports, holidays), compact form.
@@ -76,7 +93,10 @@ The sidebar shows where this is heading. The calendar is the working core; these
 |------|---------|
 | `index.html` | App shell + layout |
 | `styles.css` | Design system (tokens, dark/light) |
-| `app.js` | Rendering + view logic |
+| `app.js` | Rendering + view logic (snapshot or live) |
+| `config.js` | Your Google Client ID + options |
+| `google.js` | Google OAuth + live Calendar fetch |
+| `SETUP.md` | One-time live-sync setup guide |
 | `data/build.js` | Merges the snapshots into the unified dataset |
 | `data/primary.json` | Primary calendar snapshot |
 | `data/secondary.json` | Other calendars (Delt, sports, holidays) |

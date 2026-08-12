@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗓️</text></svg>" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <div class="app">
@@ -46,12 +47,15 @@
       </nav>
 
       <div class="sidebar-foot">
-        <button id="themeToggle" class="theme-toggle" title="Toggle theme">
-          <span class="tt-dark">🌙</span><span class="tt-light">☀️</span>
-        </button>
-        <div class="sync">
-          <span class="sync-dot"></span>
-          <span id="syncLabel">synced —</span>
+        <div class="conn" id="conn"></div>
+        <div class="foot-row">
+          <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+            <span class="tt-dark">🌙</span><span class="tt-light">☀️</span>
+          </button>
+          <div class="sync">
+            <span class="sync-dot" id="syncDot"></span>
+            <span id="syncLabel">—</span>
+          </div>
         </div>
       </div>
     </aside>
@@ -76,7 +80,9 @@
     </main>
   </div>
 
+  <script src="config.js"></script>
   <script src="data/events.js"></script>
+  <script src="google.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

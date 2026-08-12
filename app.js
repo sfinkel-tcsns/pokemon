@@ -1,11 +1,9 @@
 /* ===========================================================
    Life OS — calendar dashboard (single unified calendar)
-   Reads window.CALENDAR_DATA (seeded from Google Calendar).
+   Data source: live Google Calendar (when connected) or the
+   seeded snapshot in data/events.js (fallback / zero-setup).
    Events are colored by life-category, derived from the title.
    =========================================================== */
-
-const DATA = window.CALENDAR_DATA || { events: [], timeZone: "America/Chicago" };
-const TZ = DATA.timeZone || "America/Chicago";
 
 /* ---------- categories ---------- */
 const CATEGORIES = {
@@ -26,12 +24,13 @@ function categorize(ev) {
   if (/gym|s\.a\.v\.e\.r\.s|savers|shower|workout|run\b/.test(t)) return "health";
   if (/dinner|lunch|breakfast|meal|eat\b|coffee/.test(t)) return "meal";
   if (/drive|🚗|commute|uber|flight/.test(t)) return "travel";
-  if (/chapter|rush|o-week|oweek|greek|pref dinner|bid |voting|country music|friends|movie|odyssey| @ |eagles|ravens|patriots|bengals|commanders|titans|bears|rams|jaguars|nebraska|cornhusker|texas|longhorn|@ texas|@ nebraska/.test(t)) return "social";
+  if (/chapter|rush|o-week|oweek|greek|pref dinner|bid |voting|country music|friends|movie|odyssey| @ |eagles|ravens|patriots|bengals|commanders|titans|bears|rams|jaguars|nebraska|cornhusker|texas|longhorn/.test(t)) return "social";
   if (/clickster|admin|work|portal|laptop|forms?|email|meeting|call|excel|triage|bridge center|accommodation/.test(t)) return "work";
   return "personal";
 }
 
 /* ---------- time helpers (wall-clock, calendar TZ) ---------- */
+let TZ = "America/Chicago";
 function wallTime(iso) {
   const m = /T(\d{2}):(\d{2})/.exec(iso);
   if (!m) return "";
@@ -47,6 +46,7 @@ function nowWall() {
 function durationLabel(ev) {
   if (ev.allDay) return "all day";
   const mins = Math.round((new Date(ev.end) - new Date(ev.start)) / 60000);
+  if (isNaN(mins) || mins <= 0) return "";
   if (mins < 60) return `${mins}m`;
   const h = Math.floor(mins / 60), r = mins % 60;
   return r ? `${h}h ${r}m` : `${h}h`;
@@ -69,17 +69,30 @@ function shortDate(key) {
   return new Date(Date.UTC(y, mo - 1, d)).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
-/* ---------- data prep ---------- */
-const EVENTS = (DATA.events || [])
-  .map((e) => ({ ...e, cat: categorize(e), key: dayKey(e.start) }))
-  .sort((a, b) => String(a.start).localeCompare(String(b.start)));
+/* ---------- app state (rebuilt whenever data source changes) ---------- */
+const STATE = { events: [], byDay: {}, dayKeys: [], today: "", anchor: "", live: false };
 
-const BY_DAY = {};
-for (const e of EVENTS) (BY_DAY[e.key] ||= []).push(e);
+function loadData(data) {
+  TZ = (data && data.timeZone) || "America/Chicago";
+  const events = (data && data.events || [])
+    .map((e) => ({ ...e, cat: categorize(e), key: dayKey(e.start) }))
+    .sort((a, b) => String(a.start).localeCompare(String(b.start)));
 
-const DAY_KEYS = Object.keys(BY_DAY).sort();
-const TODAY = todayKey();
-const ANCHOR = BY_DAY[TODAY] ? TODAY : (DAY_KEYS.find((k) => k >= TODAY) || DAY_KEYS[0] || TODAY);
+  const byDay = {};
+  for (const e of events) (byDay[e.key] ||= []).push(e);
+  const dayKeys = Object.keys(byDay).sort();
+  const today = todayKey();
+
+  STATE.events = events;
+  STATE.byDay = byDay;
+  STATE.dayKeys = dayKeys;
+  STATE.today = today;
+  STATE.anchor = byDay[today] ? today : (dayKeys.find((k) => k >= today) || dayKeys[0] || today);
+  STATE.live = !!(data && data.live);
+
+  setSync(STATE.live ? "live" : "snapshot", data && data.syncedAt);
+  render();
+}
 
 /* ---------- render helpers ---------- */
 function catColor(cat) { return CATEGORIES[cat].color; }
@@ -97,11 +110,12 @@ function statusOf(ev) {
   return "";
 }
 function eventRow(ev) {
+  const dur = durationLabel(ev);
   return `
     <div class="event ${statusOf(ev)}">
       <div class="event-time">
         ${ev.allDay ? "all day" : wallTime(ev.start)}
-        <span class="dur">${durationLabel(ev)}</span>
+        ${dur ? `<span class="dur">${dur}</span>` : ""}
       </div>
       <div class="event-body">
         <span class="event-bar" style="background:${catColor(ev.cat)}"></span>
@@ -117,9 +131,10 @@ function eventRow(ev) {
 /* ---------- stats ---------- */
 function renderStats() {
   const el = document.getElementById("stats");
-  const todays = (BY_DAY[ANCHOR] || []).filter((e) => !e.allDay);
+  const anchor = STATE.anchor;
+  const todays = (STATE.byDay[anchor] || []).filter((e) => !e.allDay);
   const now = new Date();
-  const next = EVENTS.find((e) => !e.allDay && new Date(e.start) > now);
+  const next = STATE.events.find((e) => !e.allDay && new Date(e.start) > now);
 
   const focusMins = todays.filter((e) => e.cat === "work")
     .reduce((s, e) => s + (new Date(e.end) - new Date(e.start)) / 60000, 0);
@@ -128,11 +143,11 @@ function renderStats() {
 
   const nextLabel = next ? escapeHtml(truncate(next.title, 22)) : "Nothing scheduled";
   const nextSub = next
-    ? `${next.allDay ? "all day" : wallTime(next.start)} · ${next.key === ANCHOR ? "today" : shortDate(next.key)}`
+    ? `${next.allDay ? "all day" : wallTime(next.start)} · ${next.key === anchor ? "today" : shortDate(next.key)}`
     : "—";
 
   const cards = [
-    { label: "Events", value: (BY_DAY[ANCHOR] || []).length, sub: prettyDate(ANCHOR) },
+    { label: "Events", value: (STATE.byDay[anchor] || []).length, sub: prettyDate(anchor) },
     { label: "Focus / work", value: hoursLabel(focusMins), sub: "deep-work blocks" },
     { label: "Scheduled load", value: hoursLabel(loadMins), sub: "excludes sleep" },
     { label: "Up next", value: nextLabel, sub: nextSub, accent: true, small: true },
@@ -153,14 +168,14 @@ function truncate(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1)
 /* ---------- views ---------- */
 function renderToday() {
   const view = document.getElementById("view");
-  const list = BY_DAY[ANCHOR] || [];
+  const list = STATE.byDay[STATE.anchor] || [];
   if (!list.length) { view.innerHTML = `<div class="empty">No events for this day.</div>`; return; }
 
   const allday = list.filter((e) => e.allDay);
   const timed = list.filter((e) => !e.allDay);
   const now = new Date();
   const nextIdx = timed.findIndex((e) => new Date(e.start) > now);
-  const showNow = ANCHOR === TODAY && nextIdx > 0;
+  const showNow = STATE.anchor === STATE.today && nextIdx > 0;
 
   let html = "";
   if (allday.length) {
@@ -178,7 +193,7 @@ function renderToday() {
 
 function renderWeek() {
   const view = document.getElementById("view");
-  const [y, mo, d] = ANCHOR.split("-").map(Number);
+  const [y, mo, d] = STATE.anchor.split("-").map(Number);
   const base = new Date(Date.UTC(y, mo - 1, d));
   base.setUTCDate(base.getUTCDate() - ((base.getUTCDay() + 6) % 7)); // Monday
 
@@ -187,10 +202,10 @@ function renderWeek() {
     const day = new Date(base);
     day.setUTCDate(base.getUTCDate() + i);
     const key = day.toISOString().slice(0, 10);
-    const evs = BY_DAY[key] || [];
+    const evs = STATE.byDay[key] || [];
     const shown = evs.slice(0, 6);
     html += `
-      <div class="day-col ${key === TODAY ? "is-today" : ""}">
+      <div class="day-col ${key === STATE.today ? "is-today" : ""}">
         <div class="day-head">
           <div class="day-dow">${day.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" })}</div>
           <div class="day-num">${day.getUTCDate()}</div>
@@ -212,13 +227,13 @@ function renderWeek() {
 
 function renderUpcoming() {
   const view = document.getElementById("view");
-  const keys = DAY_KEYS.filter((k) => k >= TODAY);
-  const use = keys.length ? keys : DAY_KEYS;
+  const keys = STATE.dayKeys.filter((k) => k >= STATE.today);
+  const use = keys.length ? keys : STATE.dayKeys;
   if (!use.length) { view.innerHTML = `<div class="empty">No upcoming events.</div>`; return; }
   view.innerHTML = use.map((key) => `
     <div class="up-group">
-      <div class="up-date">${prettyDate(key)}${key === TODAY ? " · Today" : ""}</div>
-      <div class="timeline">${BY_DAY[key].map(eventRow).join("")}</div>
+      <div class="up-date">${prettyDate(key)}${key === STATE.today ? " · Today" : ""}</div>
+      <div class="timeline">${STATE.byDay[key].map(eventRow).join("")}</div>
     </div>`).join("");
 }
 
@@ -230,30 +245,96 @@ function renderLegend() {
 }
 
 /* ---------- view switching ---------- */
+let CURRENT = "today";
 const VIEWS = {
-  today:    { title: "Today",     sub: () => prettyDate(ANCHOR) + (ANCHOR !== TODAY ? " (next day with events)" : ""), render: renderToday },
+  today:    { title: "Today",     sub: () => prettyDate(STATE.anchor) + (STATE.anchor !== STATE.today ? " (next day with events)" : ""), render: renderToday },
   week:     { title: "This Week", sub: () => "7-day overview", render: renderWeek },
-  upcoming: { title: "Upcoming",  sub: () => `${EVENTS.filter((e) => e.key >= TODAY).length || EVENTS.length} events ahead`, render: renderUpcoming },
+  upcoming: { title: "Upcoming",  sub: () => `${STATE.events.filter((e) => e.key >= STATE.today).length || STATE.events.length} events ahead`, render: renderUpcoming },
 };
-function switchView(name) {
-  const v = VIEWS[name];
+function render() {
+  const v = VIEWS[CURRENT];
   document.getElementById("viewTitle").textContent = v.title;
   document.getElementById("viewSub").textContent = v.sub();
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
-    b.classList.toggle("active", b.dataset.view === name));
+    b.classList.toggle("active", b.dataset.view === CURRENT));
   renderStats();
   v.render();
+}
+function switchView(name) { CURRENT = name; render(); }
+
+/* ---------- sync label + connection UI ---------- */
+function setSync(mode, syncedAt) {
+  const dot = document.getElementById("syncDot");
+  const label = document.getElementById("syncLabel");
+  if (mode === "live") {
+    dot.style.background = "var(--c-health)";
+    const t = syncedAt ? new Date(syncedAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "now";
+    label.textContent = "live · " + t;
+  } else {
+    dot.style.background = "var(--text-faint)";
+    const t = syncedAt ? new Date(syncedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—";
+    label.textContent = "snapshot · " + t;
+  }
+}
+
+function renderConn(mode, msg) {
+  const el = document.getElementById("conn");
+  const configured = window.LifeOSGoogle && LifeOSGoogle.isConfigured();
+
+  if (!configured) {
+    el.innerHTML = `<div class="conn-hint">Add your Client ID in <code>config.js</code> for live sync · see SETUP.md</div>`;
+    return;
+  }
+  if (mode === "connecting") {
+    el.innerHTML = `<button class="conn-btn" disabled>Connecting…</button>`;
+    return;
+  }
+  if (mode === "live") {
+    el.innerHTML =
+      `<button class="conn-btn" id="refreshBtn">↻ Refresh</button>
+       <button class="conn-btn ghost" id="disconnectBtn">Disconnect</button>`;
+    document.getElementById("refreshBtn").addEventListener("click", goRefresh);
+    document.getElementById("disconnectBtn").addEventListener("click", goDisconnect);
+    return;
+  }
+  // snapshot / error
+  el.innerHTML =
+    `<button class="conn-btn primary" id="connectBtn">Connect Google Calendar</button>
+     ${msg ? `<div class="conn-err">${escapeHtml(msg)}</div>` : ""}`;
+  document.getElementById("connectBtn").addEventListener("click", goConnect);
+}
+
+async function goConnect() {
+  renderConn("connecting");
+  try {
+    const data = await LifeOSGoogle.fetchAll();
+    loadData(data);                 // rebuilds + re-renders as live
+    renderConn("live");
+  } catch (e) {
+    setSync("snapshot", window.CALENDAR_DATA && window.CALENDAR_DATA.syncedAt);
+    renderConn("error", e.message);
+  }
+}
+async function goRefresh() {
+  const btn = document.getElementById("refreshBtn");
+  if (btn) { btn.textContent = "Refreshing…"; btn.disabled = true; }
+  try {
+    const data = await LifeOSGoogle.fetchAll();
+    loadData(data);
+    renderConn("live");
+  } catch (e) {
+    renderConn("error", e.message);
+  }
+}
+function goDisconnect() {
+  try { LifeOSGoogle.disconnect(); } catch (e) {}
+  loadData(window.CALENDAR_DATA || { events: [] });   // back to snapshot
+  renderConn("snapshot");
 }
 
 /* ---------- boot ---------- */
 function boot() {
   renderLegend();
-
-  if (DATA.syncedAt) {
-    const d = new Date(DATA.syncedAt);
-    document.getElementById("syncLabel").textContent =
-      "synced " + d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  }
 
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.addEventListener("click", () => switchView(b.dataset.view)));
@@ -266,6 +347,7 @@ function boot() {
     localStorage.setItem("lifeos-theme", cur);
   });
 
-  switchView("today");
+  loadData(window.CALENDAR_DATA || { events: [] });   // start from snapshot
+  renderConn("snapshot");
 }
 boot();
