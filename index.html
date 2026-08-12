@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life OS — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗓️</text></svg>" />
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <span class="brand-name">Life<span>OS</span></span>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-view="today">
+          <span class="nav-ico">☀️</span> Today
+        </button>
+        <button class="nav-item" data-view="week">
+          <span class="nav-ico">🗓️</span> Week
+        </button>
+        <button class="nav-item" data-view="upcoming">
+          <span class="nav-ico">⏳</span> Upcoming
+        </button>
+      </nav>
+
+      <div class="nav-section-label">Life modules</div>
+      <nav class="nav">
+        <button class="nav-item soon" disabled>
+          <span class="nav-ico">✅</span> Tasks <span class="soon-tag">soon</span>
+        </button>
+        <button class="nav-item soon" disabled>
+          <span class="nav-ico">🔥</span> Habits <span class="soon-tag">soon</span>
+        </button>
+        <button class="nav-item soon" disabled>
+          <span class="nav-ico">📝</span> Notes <span class="soon-tag">soon</span>
+        </button>
+        <button class="nav-item soon" disabled>
+          <span class="nav-ico">💰</span> Money <span class="soon-tag">soon</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <button id="themeToggle" class="theme-toggle" title="Toggle theme">
+          <span class="tt-dark">🌙</span><span class="tt-light">☀️</span>
+        </button>
+        <div class="sync">
+          <span class="sync-dot"></span>
+          <span id="syncLabel">synced —</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="viewTitle">Today</h1>
+          <p id="viewSub" class="sub"></p>
+        </div>
+        <div class="topbar-right">
+          <div class="legend" id="legend"></div>
+        </div>
+      </header>
+
+      <!-- Stat strip -->
+      <section class="stats" id="stats"></section>
+
+      <!-- View slot -->
+      <section class="view" id="view"></section>
+    </main>
+  </div>
+
+  <script src="data/events.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
