@@ -1,6 +1,7 @@
 window.CALENDAR_DATA = {
   "generatedFor": "thesimonfinkel@gmail.com",
   "timeZone": "America/Chicago",
+  "syncedAt": "2026-08-12T17:24:43Z",
   "events": [
     {
       "id": "ourma2hoj6oo7632odpjbhlm3c_20260812T050000Z",
@@ -8,8 +9,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-11T22:45:00-05:00",
       "end": "2026-08-12T06:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Seven hours. Midnight to seven, Sunday through Thursday nights. No block Friday or Saturday — those are yours."
+      "location": null
     },
     {
       "id": "f9evcrqk319tpf37lvcs5ck2ls",
@@ -17,8 +17,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T00:00:00Z",
       "end": "2026-08-13T00:00:00Z",
       "allDay": true,
-      "location": null,
-      "description": "You woke with the sunrise at 5:56, did S.A.V.E.R.S, and were lifting by 7 — the morning after the hardest day of your summer. That's the routine working, not you being fine. Both can be true.\n\n━━━ THE ONE THING FROM THE JOURNAL ━━━\nYou wrote that you shouldn't take the antidepressants, and you put a Hal Elrod quote above it.\n\nElrod did the chemo. He had acute lymphoblastic leukemia, he wanted to beat it naturally, he said out loud he was scared doing chemo would make him \"just like everyone else that gave in\" — and then he decided: \"I'm going to do the chemotherapy, but I'm also going to do every holistic protocol that I can possibly put into my body.\" Both. Not instead of.\n\nYou're deciding this on the best morning you've had in weeks, eleven days before you move 2,000 miles and lose this routine, your family, and your therapist's zip code. That's the worst possible window to change a psychiatric variable.\n\n🔴 Bring the journal page to Benjy tomorrow, 1pm. Decide it there, not alone. If you've already started them, say so before you stop anything — discontinuation is a real clinical thing, not a willpower thing.\n\n━━━ TODAY ━━━\n2:30pm — the automation diagnostic is item zero. Laptop, Claude Code open, tell me to run it. Five minutes to prove.\nAlso delete the scheduled task called \"Briefing\" yourself. I can't reach it.\n\nDay 1 of the streak. Ship the Short, don't overbuild it. Starting is the whole job today.\n\n━━━ ONE LINE YOU BURIED ━━━\n\"especially when I couldn't drink.\"\n\nYou found out this summer that a chunk of your social life ran on alcohol, and with it gone you'd rather stay in. That's not a failure, it's data — and you walk back into a Delt semester in twelve days. It belongs in the fall plan. Bring it tomorrow."
+      "location": null
     },
     {
       "id": "fotpn07gmlvd8hbott8s4tp900",
@@ -26,8 +25,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T00:00:00Z",
       "end": "2026-08-13T00:00:00Z",
       "allDay": true,
-      "location": null,
-      "description": "Three things happen in the sky within 24 hours today, which is genuinely rare.\n\n━━━ TOTAL SOLAR ECLIPSE ━━━\nTotality runs 16:58–18:34 GMT across Arctic Russia, Greenland, Iceland, a sliver of Portugal, northern Spain and the Balearics. Mallorca gets 1 minute 36 seconds.\n\nTotality is not visible anywhere in the US. A PARTIAL eclipse is visible from the Northeast, Mid-Atlantic and Upper Midwest — Chicago is in that band. NYC runs roughly 1:07–2:38pm Eastern, so Chicago is around midday.\n\n⚠️ You'll be at your desk on the Clickster block. If you go look: eclipse glasses or welding glass only. Sunglasses do not work, and looking directly causes permanent retinal damage.\n\n━━━ PERSEIDS PEAK TONIGHT ━━━\nPeak is the night of Aug 12–13, and it lands on a NEW MOON — the moon chip on your calendar says 10:37am today. Darkest possible sky. Conditions are about as good as this shower ever gets.\n\nYou're home from the Odyssey at 9 and your free hour is 9–10. Rates climb the later it gets, but you'll catch some at 10pm looking northeast. You wrote this morning about the lake and the dew and how good being outside felt — worth ten minutes in the yard before wind-down.\n\n━━━ SIX-PLANET ALIGNMENT ━━━\nJupiter, Mercury, Mars, Uranus, Saturn and Neptune, all before sunrise. You're already up at 5:56 — that's the window.\n\n━━━ FOR THE CHANNEL ━━━\nvidIQ confirmed the 1,000-subscriber monetization minimum did NOT change. Everything starts Feb 1, 2027, with one component deadlined in January. Doesn't touch you at 134K, but worth knowing before someone tells you otherwise."
+      "location": null
     },
     {
       "id": "mbhqhhj3p71amtonqguibfmerg",
@@ -35,8 +33,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T00:00:00Z",
       "end": "2026-08-13T00:00:00Z",
       "allDay": true,
-      "location": null,
-      "description": "Three real ones. Everything else in the inbox is newsletters and receipts.\n\n━━━ 1 · vidIQ IS WAITING ON YOU ━━━\nsupport@vidiq.com, Aug 10: \"Just checking in to see what you decided to do.\"\n\nThis is the Max upgrade thread. Your subscription is billed through Apple's in-app purchase system, and Apple fully controls it — vidIQ can't upgrade you from their end. They gave you options and you never picked one. Two days of silence and support threads auto-close.\n\nEither reply with a choice or tell them to close it. Don't leave it hanging until Sept 3 and then be annoyed you're still on the old plan.\n\n━━━ 2 · YOUR DAD EMAILED ABOUT THE AUDI ━━━\nkfinkel@provre.com, Aug 11: \"Drop off Audi at Gerber for Window repair bet 8am and 9am\"\n\nStill unread. It's on your calendar for Tue Aug 18, 8–9am — but the email doesn't say which day, and 8–9am is a window that collides with your gym on any day it lands. Text him and confirm the date. Do it before he asks you twice.\n\n━━━ 3 · LARGE TRANSACTION FLAG ━━━\nRocket Money, Aug 10: unusually large transaction on your Chase account.\n\nProbably you. Check it anyway — takes thirty seconds and you're about to be 2,000 miles from your bank branch.\n\n━━━ NOTED, NO ACTION ━━━\nDiscover it card activated ✓ · Capital One added to Apple Pay ✓ · Hinge verification code (already used) · two haircut invite updates from your mum, both already handled on the calendar."
+      "location": null
     },
     {
       "id": "ri28j2veubla3pki7fv8gc6e78",
@@ -44,8 +41,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T00:00:00Z",
       "end": "2026-08-13T00:00:00Z",
       "allDay": true,
-      "location": null,
-      "description": "Live numbers pulled this morning.\n\n━━━ THE FIND ━━━\nThe \"+1 Speed [X] Escape\" template is one of the biggest formats on the platform right now — and the superhero versions of it are almost empty.\n\n+1 Speed Monkey Escape — 92,635 playing (#4 on trending)\n[W2] +1 Speed Super Hero Escape — 3,856 playing, 27.8M visits, made May 20\n+1 Speed Spidey Escape — 957 playing\n+1 Speed Iron Man Escape — 12 playing\n\nNinety-two thousand on the monkey version. Twelve on the Iron Man one. A proven format with a wide-open hero niche, and both hero variants launched inside 90 days so almost certainly nobody's covered them.\n\nThe video isn't \"I played +1 Speed Super Hero Escape.\" It's the format itself — why the monkey one has 92K and the hero one has 3K, played back to back. Same shape as the Web Rush vs Web-Verse video you already have planned.\n\n━━━ ALSO LIVE ━━━\n[NEW SUIT] Web Rush — 11,625 playing, 95.8M visits. Currently ~#12 on the trending sort, and it shipped a NEW SUIT on Aug 9. Three days ago, and it lands right before Friday's Spider-Man batch — lead with the new suit, it's the freshest thing in the shoot.\n\nWar Machines — 3,851 playing, 442M visits. Iron Man-adjacent mech shooter.\nIron Man: Reimagined — 1,776 playing, 106M visits. Still the best pure Iron Man title.\nSuper Power Tycoon — 3,068 playing, made Jun 26, on trending.\n\n━━━ RULED OUT ━━━\nHeroes Battlegrounds (9,206 playing) is My Hero Academia, not Marvel/DC — off-brand.\nSteel Crossfire and Heroes RNG surfaced on hero searches but aren't superhero games.\n\nOne search query rate-limited and wasn't retried, so this isn't exhaustive."
+      "location": null
     },
     {
       "id": "k4haksm7mb0a4t2ecs3eu7h33g_20260812T120000Z",
@@ -53,8 +49,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T06:00:00-05:00",
       "end": "2026-08-12T07:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": null
+      "location": null
     },
     {
       "id": "kfnpv5of62ds6kejjgr2ahbo84_20260812T120000Z",
@@ -62,8 +57,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T07:00:00-05:00",
       "end": "2026-08-12T08:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Home stretch gym — straight out of SAVERS. Keeps the routine alive between camp and school so week one at Chapman isn't a cold start."
+      "location": null
     },
     {
       "id": "uqraupssuqksga1copgd60hi4c",
@@ -71,8 +65,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T08:00:00-05:00",
       "end": "2026-08-12T10:15:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "What actually happened: BIOS wouldn't clear, drove it to the repair place in Highwood, yogurt in the car. Pickup at 2.\n\nNothing to do here — this block is just so the morning reads true."
+      "location": null
     },
     {
       "id": "0i7ihi0b821vobliogesp08erg",
@@ -80,8 +73,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T10:15:00-05:00",
       "end": "2026-08-12T13:45:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Actually free. The machine's at the shop and there's nothing you can do about it until 2.\n\n🍽 Eat something real first though. A yogurt at 9 after lifting at 7 isn't food, and there's an entire pantry in there.\n\n━━━ IF YOU WANT SOMETHING TO DO WITH IT ━━━\nNot scheduled. Offered.\n\n✍️ The letter to the bunk. You've been carrying that thin goodbye since Monday — a hug, \"have a great summer,\" their faces in the mirror as you pulled out. Handwritten, all five names, one specific thing each, and the thing you didn't say at the car. Then send it to the head counselor to read out.\n\nIt keeps getting pushed because everything else has a deadline and this doesn't. A dead laptop just handed you an hour that has no deadline attached to it either.\n\nThe details fade in about a month. The feeling doesn't. You know better than most people the difference between a memory and footage.\n\nOr read. Or sit outside. All fine."
+      "location": null
     },
     {
       "id": "aadfi0er5el58fkgsjqu7iho28",
@@ -89,8 +81,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T13:45:00-05:00",
       "end": "2026-08-12T14:15:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Round trip. Call before you leave to confirm it's actually ready — a wasted drive here costs you the Day 1 Short.\n\nASK THEM, and write the answers down:\n· What was it? (Boot order, CMOS battery, or the drive?)\n· Was anything replaced?\n· If it was the drive — is my data intact, and did you clone it?\n· Will this hold for a flight to California in ten days?\n\nIf it's NOT ready: come home, do the Short on your phone or whatever else records, and tell me. Don't wait around in Highwood."
+      "location": null
     },
     {
       "id": "ipn9oa4ius476glgd29cjqc3uc",
@@ -98,8 +89,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T14:15:00-05:00",
       "end": "2026-08-12T15:45:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "📤 PUBLISHES TODAY — SHORT: \"6 Roblox Iron Man games nobody plays\" (teaser)\nRecord and ship it in this block. Do not overbuild — day one is about starting, not about being your best video. Three seconds of each game, no answer. End on: \"Friday I'm ranking all six. Which do you think wins?\" Schedule 9:00am CT.\n\n⚠️ THIS SHORT HAS A JOB. Channel pages are only 5.9% of your traffic — your Shorts currently send nobody to your long-form. This one is a trailer for Friday's ranking and nothing else. The last line must name Friday.\n\n📺 Big on-screen text. 53.2% of your audience watches on a TV. Three seconds of a game with a tiny label is unreadable from a couch.\n\nDO THAT FIRST. Then, if there's time:"
+      "location": null
     },
     {
       "id": "7j6g3cvqc9v30eevdeej0etht4_20260812T190000Z",
@@ -107,8 +97,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T15:45:00-05:00",
       "end": "2026-08-12T16:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "368 Park Ave, Glencoe. Your mum moved the cut from 1pm to 4pm — the whole afternoon shifted forward to cover it.\n\nLeave on time. It's tight on the back end: you're out at 5, home 5:15, dinner 5:15–5:45, and the car leaves for the Odyssey at 5:45."
+      "location": null
     },
     {
       "id": "_8gr3cdi368sk4b9l8cqk4b9k88qjaba2852j2b9l6kojiga464rk2e1o6g",
@@ -116,8 +105,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T16:00:00-05:00",
       "end": "2026-08-12T17:00:00-05:00",
       "allDay": false,
-      "location": "Pascal Pour Elle\n368 Park Ave, Glencoe, IL  60022, United States",
-      "description": null
+      "location": "Pascal Pour Elle\n368 Park Ave, Glencoe, IL  60022, United States"
     },
     {
       "id": "8r64fknme7e1qtobqes8g2fcg8",
@@ -125,8 +113,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T17:00:00-05:00",
       "end": "2026-08-12T17:15:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Straight back. Dinner is on the table at 5:15 and the car leaves for Skokie at 5:40."
+      "location": null
     },
     {
       "id": "ov3ki8k7cthrj9orursgdcimk0_20260812T223000Z",
@@ -134,8 +121,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T17:15:00-05:00",
       "end": "2026-08-12T17:40:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Early tonight — The Odyssey at 6:00, AMC Village Crossing in Skokie. Eat, then roll. Work stops here."
+      "location": null
     },
     {
       "id": "1lnff4ntka1dbpe1rda8otl6t4",
@@ -143,8 +129,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T17:40:00-05:00",
       "end": "2026-08-12T21:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Drive to AMC Village Crossing (Skokie), 6:00 showtime. The little ticket event inside this block is the Gmail auto-import — this is the real footprint."
+      "location": null
     },
     {
       "id": "av432ejp7akmd51e91niis62k0_20260812T233000Z",
@@ -152,8 +137,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T21:00:00-05:00",
       "end": "2026-08-12T22:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Actually free. Friends, home friends you haven't seen since May, whatever. Not YouTube. This block is what stops the channel from eating the whole day."
+      "location": null
     },
     {
       "id": "69ij670n77l5s17a0fceom7ol8_20260813T030000Z",
@@ -161,8 +145,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T22:00:00-05:00",
       "end": "2026-08-12T23:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Last thought = first thought. That's the whole reason this block exists.\n\n10:00 · SET UP (10 min)\n☐ Alarm across the room\n☐ Full glass of water next to it\n☐ Gym clothes on top of the glass\n☐ Journal open to tomorrow's page\n☐ Phone on the charger — same trip\n\n10:10 · READ (25 min)\nFiction. Paper. No screens, no checking the numbers.\n\n10:35 · SCORE THE DAY (5 min)\n1. What did I commit to today?\n2. Did I do it? Yes or no.\n3. What's tomorrow's one thing?\nWrite #3 at the bottom of the journal page. Effort only — never views.\n\n10:40 · SAY IT OUT LOUD (5 min)\nThe Mantra: \"I am committed to maintaining Unwavering Faith that I will publish a video every single day and take Clickster to 200,000 subscribers, and I will continue putting forth Extraordinary Effort until I do. No matter what — there is no other option.\"\nThen: \"I'm getting seven hours. I'm waking up at 6:00 rested.\"\n\n10:45 · MEDITATE TO SLEEP (15 min)\nLights off, in bed, on your back.\nIn through the nose 4. Out through the mouth 6. The long exhale is what drops you.\nThen body scan — feet, legs, hips, chest, arms, jaw, forehead. Release each one.\nDon't try to make it to the end. Falling asleep partway through is the point."
+      "location": null
     },
     {
       "id": "ourma2hoj6oo7632odpjbhlm3c_20260813T050000Z",
@@ -170,8 +153,15 @@ window.CALENDAR_DATA = {
       "start": "2026-08-12T23:00:00-05:00",
       "end": "2026-08-13T06:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Seven hours. Midnight to seven, Sunday through Thursday nights. No block Friday or Saturday — those are yours."
+      "location": null
+    },
+    {
+      "id": "x-0",
+      "title": "Andres Garcia's Birthday",
+      "start": "2026-08-13",
+      "end": "2026-08-14",
+      "allDay": true,
+      "location": null
     },
     {
       "id": "k4haksm7mb0a4t2ecs3eu7h33g_20260813T120000Z",
@@ -179,8 +169,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T06:00:00-05:00",
       "end": "2026-08-13T07:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": null
+      "location": null
     },
     {
       "id": "kfnpv5of62ds6kejjgr2ahbo84_20260813T120000Z",
@@ -188,8 +177,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T07:00:00-05:00",
       "end": "2026-08-13T08:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Home stretch gym — straight out of SAVERS. Keeps the routine alive between camp and school so week one at Chapman isn't a cold start."
+      "location": null
     },
     {
       "id": "n7r4ldf6ej8bceeve4hog4sckk_20260813T130000Z",
@@ -197,8 +185,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T08:00:00-05:00",
       "end": "2026-08-13T08:30:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Post-gym reset. Phone stays off until the work block starts."
+      "location": null
     },
     {
       "id": "o9na0so5sh395cqoef58goj454",
@@ -206,8 +193,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T08:30:00-05:00",
       "end": "2026-08-13T12:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "📤 PUBLISHES TODAY — SHORT: Web Rush first look. 12,225 players, all-time peak, you've never played it. 30 seconds of swinging, honest reaction. End on: \"Is this better than Web-Verse? I'm testing both Tuesday.\" Schedule 9:00am CT.\n\n━━━━━━━━━━━━━━━━━━━━\n\n🎬 THIS SESSION PRODUCES A WEEK OF UPLOADS. Do not stop to edit.\n\n🔴 THE AXIS IS REALISM. Studio's own \"what people are looking for\" panel is showing you the exact phrase \"the most realistic roblox iron man game.\" That is YouTube telling you the demand in writing, and the outlier scan says nobody is filling it. So you are not ranking these games by \"good.\" You are ranking them by HOW REAL THE SUIT FEELS. Every game gets judged on the same things, out loud, in the same order: the suit-up, the flight, the repulsors, the damage, the HUD. Same five, every game — that's what makes it a ranking instead of six reviews.\n\nSIX GAMES, back to back, ~25 min each. You have covered NONE of them:\n1. Iron Man Battlegrounds (408 players)\n2. Iron Man: Playground (187) — a showcase of this did 110.6K views for Bacon gaming\n3. Iron Man Armor Wars (185)\n4. Iron Man: Legacy [NEW YORK] (58)\n5. Iron Man: Legacy (35)\n6. Iron Man: Reloaded [ALPHA] (30)\n\nIgnore the player counts. Showcase content runs on the IP, not the concurrent count.\n\nWHY: your audience watched nine Iron Man videos in the last seven days and they were 1–4 years old. ZERO Roblox Iron Man outliers on YouTube this month. Live demand, empty shelf, and it's the vertical where you already have 926K.\n\nCAPTURE DISCIPLINE:\n☐ One continuous take per game. No re-shoots.\n☐ Say the game name out loud on entry — makes cutting trivial.\n☐ Something genuinely cool? Say so and hold 10 seconds. That's a Short.\n☐ RANK THEM OUT LOUD AS YOU GO, on realism, and say WHY each sits where it does. A list gets 0.04% comments; a defended order gets an argument.\n☐ Say the negative thing where you mean it.\n☐ End on the best one.\n\n📺 SHOOT IT FOR A TELEVISION. 53.2% of your audience watches on a TV — more than mobile, tablet and computer combined. Big on-screen text, one element at a time, no tiny UI callouts. If you can't read it from ten feet, half your audience can't read it.\n\n👍 THE METRIC IS LIKES, NOT COMMENTS. Half your audience physically can't comment from a TV remote. A like is one button. Ask for the like at the moment something impresses you on screen — never at the top, never generic.\n\nFEEDS: Fri 14 the ranking · Sat 15, Sun 16, Mon 17 Shorts · plus a spare for the banked days.\n───────────\nSame session, second half. Six games at ~25 minutes each does NOT fit in the 8:30 block alone — it needs both.\n\n8:30–10:15 → games 1–4\n10:15–10:30 → break\n10:30–12:00 → games 5–6, then re-record the ranking out loud start to finish so the edit has a clean spine.\n\nBenjy is at 1:00 today. Stop at noon regardless of where you are — an unfinished game is fine, a rushed therapy appointment isn't."
+      "location": null
     },
     {
       "id": "ul4grcn5sam0q6ggp9v6d9cfb8_20260813T180000Z",
@@ -215,8 +201,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T12:00:00-05:00",
       "end": "2026-08-13T12:40:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Eat outside if you can. Bring the book. This is a real break, not a working lunch."
+      "location": null
     },
     {
       "id": "gvcl933nslee5kgbgnb5hec46s",
@@ -224,8 +209,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T12:40:00-05:00",
       "end": "2026-08-13T13:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "1261 Clavey Rd, Highland Park. Apple or Google Maps, NOT Waze. Driveway is a slow quarter-mile. Lost: 847-350-7677.\n\nRead this in the car. The full brief is in the 1:00 event — this is the one thing that got added after you wrote it.\n\n━━━━━━━━━━━━━━━━━━━━\n🔴 THE MEDICATION QUESTION\n━━━━━━━━━━━━━━━━━━━━\nYou wrote in your journal Aug 12 that you shouldn't take the antidepressants. Then you asked the better question: if I do take them, how do I run them the way Hal Elrod ran chemo — the medicine AND every protocol alongside it.\n\nBring both halves. Say you were leaning against, say what changed your mind about deciding it alone, and then ask these:\n\n☐ If we start something, when do I judge it? (The answer is 4–6 weeks, not 2. Get him to say it out loud so you don't quit in week two with all the side effects and none of the benefit.)\n\n☐ What side effects show up first, and which ones fade? Which ones mean call you immediately?\n\n☐ Morning or night, and does that change with the drug? Activating vs sedating matters for a 6am wake-up.\n\n☐ If the first one doesn't work, what's the actual process? (Roughly a third of people respond to the first medication. Switching is normal, not failure — hear that now, not in October.)\n\n☐ ⚠️ SUPPLEMENT SAFETY. Tell him you're an \"all natural\" guy and ask what you must NOT take. Specifically name St John's Wort, 5-HTP, SAM-e and L-tryptophan — all sold over the counter, all push serotonin, all risk serotonin syndrome with an SSRI. This is the \"not dangerous\" clause in the Elrod quote and it's aimed straight at you.\n\n☐ Omega-3 as an adjunct — EPA specifically, not the ALA in your chia and flax. The meta-analysis found the effect was STRONGER in people already on antidepressants. Ask if he'd support it and at what dose.\n\n☐ Alcohol on the medication. You already know the answer. Make him say it anyway, twelve days before a Delt semester.\n\n☐ PHQ-9 every two weeks so we're tracking a number, not a vibe. Ask him to set it up. You measure everything else in your life.\n\n☐ Who prescribes and monitors this once you're in California? This joins section 9 — it's a deadline item now, not a someday item.\n\n☐ If I'm already on them and want to stop: what's the taper, and why can't I just stop?\n\nThe frame if he asks why you changed your mind: Elrod did the chemo. He wanted to beat it naturally, he was scared doing chemo would make him \"just like everyone else that gave in,\" and then he did both. Not instead of."
+      "location": null
     },
     {
       "id": "tqlhlmcb7f03i8t5hc20j194mc",
@@ -233,8 +217,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T13:00:00-05:00",
       "end": "2026-08-13T14:00:00-05:00",
       "allDay": false,
-      "location": "1261 Clavey Rd, Highland Park, IL 60035",
-      "description": "1261 Clavey Rd, Highland Park. Entrance north side of Clavey between Aspen and Larkspur. Driveway is a slow quarter-mile, one way. Arrive at 1:00, not early. Apple or Google Maps, NOT Waze. Lost: 847-350-7677.\n\nBRING: the 2024 neuropsych report (Andrea Victor, Ph.D.). He almost certainly hasn't seen it.\n\n⏱ At the 40-minute mark jump to section 9 even if you aren't done. It's the only part with a deadline.\n\n━━━━━━━━━━━━━━━━━━━━\n1 · START HERE — HOW BAD THE NUMBNESS GOT\nLead with the safe part. Saying it first closes the question instead of opening it.\n• \"I want to say something, and I want to say the safe part first — I have never had any intent to hurt myself and I never would. That is not on the table and it never has been.\"\n• \"But the numbness this summer got really bad. Bad enough that at one point I just wanted a break from being conscious. Not a plan, not wanting to die — I wanted out of the nothing.\"\n• Say roughly when. Around Aug 8. Say it's better now.\n• Say why you're telling him: so he knows how far down it actually went, not because you're in danger.\n• If he runs the assessment questions — intent, plan, means, timeline — answer all four straight. They're all no, and saying so out loud is what ends that part of the conversation.\n• THE JOURNAL STAYS YOURS. If he asks to see anything: \"No, but I'll tell you anything you want to know.\"\n\n━━━━━━━━━━━━━━━━━━━━\n2 · THE SUMMER, IN ORDER\n• Counselor at Camp Baco, upstate NY, all summer. Left Aug 11.\n• Depression got WORSE across the summer, not better.\n• Around week four the social battery went dead. Full stop.\n• Became withdrawn. Your words: \"no charisma left to give.\"\n• Aug 8 — the bottom. See section 1.\n• Aug 9-10 — it turned. You can feel \"the spark that makes me me\" coming back.\n• Five days from low to real lift. Fast in both directions.\n\n━━━━━━━━━━━━━━━━━━━━\n3 · 🔑 THE DRINKING — SAY THIS, IT'S THE BIGGEST PIECE\nThe most useful thing you can give him. Don't bury it and don't apologize for it.\n• First 3-4 weeks of camp you were drinking heavily. Pregaming 4-5 shots of vodka, then at the bar two heavy-poured vodka sodas plus another shot or two. Roughly 8-12 standard drinks a night depending on the pour.\n• He'll ask how many nights a week. Have the honest number ready.\n• The hangovers started normal and got worse every time. Not just physically — hangxiety, and sadness the next day.\n• You noticed, and YOU STOPPED. On your own, because you could feel it hurting you.\n• You've been sober since, and you're still sober now.\n\nTHE TIMELINE HE NEEDS TO SEE:\nheavy drinking weeks 1-4 → social battery dead ~week 4 → worse through the rest of the summer → bottom Aug 8 → already stopped drinking → turned Aug 9-10\n\n• Say plainly that you think the drinking was a big part of it, and ask whether that tracks. Don't let him treat this as an unexplained episode when you have a candidate.\n• ALSO tell him what didn't stop when the drinking did — how long the numbness kept going after you quit. That gap is the part he actually needs to interpret.\n\nOTHER THINGS THAT MAY HAVE PLAYED INTO IT\n• ANHEDONIA. \"I feel nothing\" ran through the whole stretch. Numbness, not sadness — that's the main symptom.\n• Cognitive fatigue — \"on\" for campers every waking hour for weeks.\n• Sleep. Drinking wrecks it even on the nights you're not drinking.\n• You talked to RYLAND about the anhedonia, and separately about smoking.\n• Camp ending. Structure changing.\n• You're genuinely unsure how these split apart. That's the ask.\n\n━━━━━━━━━━━━━━━━━━━━\n4 · HISTORY HE NEEDS\n• FAMILY HISTORY: anxiety and depression on both sides. Page 1 of the report.\n• You're 20. Birthday July 6.\n• You already see a therapist — ERIC.\n• You booked this appointment yourself, in July, while you were feeling terrible.\n• You journal daily. It's private and stays private — but you track yourself, so you can tell him the pattern without handing anything over.\n\n━━━━━━━━━━━━━━━━━━━━\n5 · THE NEUROPSYCH REPORT (hand it to him)\n• Immediate memory: 2nd percentile.\n• On word pairs you went 2 → 6 → 12 → 14 across four trials. Repetition works on you; single exposure does not.\n• Reading comprehension: 21st percentile timed, 98th untimed. Same brain, two scores, the only variable is the clock.\n• Your words to the examiner: your brain \"gets overloaded\" and \"shuts down.\"\n• THE ADHD QUESTION. Diagnosed 8th grade. The 2024 re-eval did NOT carry it forward — attention measures clean, absent from the conclusions. Nobody ever told you either way.\n• You had a 504 Plan. It does NOT follow you to college automatically.\n\n━━━━━━━━━━━━━━━━━━━━\n6 · WHAT'S ALREADY WORKING — say this part too\n• Miracle Morning (S.A.V.E.R.S) daily. Unbroken since July 20.\n• Gym six mornings a week.\n• Sleep protected 11pm-6am, Sunday through Thursday.\n• New wind-down routine this week, ending in meditation to sleep.\n• Cooking for yourself, no delivery, a real food system.\n• SOBER SINCE ROUGHLY WEEK FOUR, by your own decision, because you noticed it was hurting you. That is the single best thing on this list.\n\n━━━━━━━━━━━━━━━━━━━━\n7 · WHAT'S COMING — the load in two weeks\n• Aug 22: fly ORD→SNA, land 6:51pm. Chapman Court, Anaheim, alone.\n• Aug 24: classes start. FP 315, FP 239 Directing I, FP 237 Cinematography I, CRPR 234.\n• Aug 12: a YouTube video EVERY SINGLE DAY. You committed on Aug 8 — two days after the bottom. Worth him knowing the timing.\n• Clickster, 134,946 subscribers. Income fell from about $3,900 in March to about $960 in July. Real money, real pressure.\n• Delts starting up, new city, no support network there yet.\n• A payment plan with your dad on $1,885.90.\n\n━━━━━━━━━━━━━━━━━━━━\n8 · QUESTIONS FOR HIM\n• Is \"I feel nothing\" clinically different from \"I feel sad\"? Does it change the treatment?\n• HOW MUCH OF THIS WAS THE ALCOHOL AND HOW MUCH WAS UNDERNEATH IT? What would tell us the difference?\n• What are MY early warning signs — not the generic list, the two or three that showed up first this summer?\n• Do I still have ADHD or not? Does it matter now?\n• Could running at \"overloaded and shuts down\" effort every day be part of why I've felt flat?\n• Is a daily upload a good structure for me, or a pressure I'm building on purpose?\n• Should my parents know how low it got, and should they know about the drinking? You haven't decided.\n\n━━━━━━━━━━━━━━━━━━━━\n9 · 🔴 BEFORE YOU LEAVE THE ROOM\nYou fly in nine days. Do not walk out without these.\n☐ Can ERIC keep seeing you by video in California, or does licensing block it?\n☐ If not — a referral near Chapman, or exactly how to use Chapman's counseling center. Get the name.\n☐ Who do you call at 2am in Anaheim before you know anybody? A real answer, written down.\n☐ Chapman Disability Services — extended time (1.5x), smaller testing room with breaks, one section at a time, notes provided, preferential seating. Ask if he'd write anything to support it.\n\n━━━━━━━━━━━━━━━━━━━━\n10 · 🔴 THE FALL PLAN FOR DRINKING — not optional\nThis stopped being a footnote the moment section 3 became the story. In nine days you move into a fraternity in a new city with none of the people who'd notice you slipping.\n• Ask directly: what's my actual plan for alcohol at Chapman? Not a resolution — a plan.\n• What would my own early warning signs be, given what happened this summer?\n• Is \"I don't drink\" or \"I'm taking a break\" the easier sentence to hold in a room full of people you just met?\n• You'd rather play Smash with campers than get in a car going too fast, and you said out loud that you hated the dangerous rides. You already know how to be the one who opts out. Ask him how to make that portable.\n\n━━━━━━━━━━━━━━━━━━━━\n11 · IF THERE'S TIME\n• The smoking conversation with Ryland.\n• Your biggest dream, in your own words: to have a super power, or a real Iron Man suit. You dreamed you had a working one and said you don't think that will ever change. It's the honest root of the whole channel and it isn't a joke.\n\n━━━━━━━━━━━━━━━━━━━━\nYou booked this yourself when you were feeling terrible. That was the hard part, and it's already done."
+      "location": "1261 Clavey Rd, Highland Park, IL 60035"
     },
     {
       "id": "noiq2qovqtofgk6vkk8dfev578",
@@ -242,8 +225,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T14:00:00-05:00",
       "end": "2026-08-13T14:30:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": null
+      "location": null
     },
     {
       "id": "8tnit1ihf86g8oduff8v2706vc",
@@ -251,8 +233,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T14:30:00-05:00",
       "end": "2026-08-13T17:30:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": " "
+      "location": null
     },
     {
       "id": "ov3ki8k7cthrj9orursgdcimk0_20260813T223000Z",
@@ -260,8 +241,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T17:30:00-05:00",
       "end": "2026-08-13T18:30:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Hard stop on work. Family dinner, then your time. Ten days at home before Chapman — Oliver and your parents count too."
+      "location": null
     },
     {
       "id": "c6douu3tqnhv2aiitdls8j83is",
@@ -269,8 +249,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T18:30:00-05:00",
       "end": "2026-08-13T19:30:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Valant portal invite (search inbox for &quot;valant&quot; — may be in junk). Update demographic + contact info, sign the practice policies, and fill out as many of the 4 release-of-information forms as you need. Do it on desktop, not the mobile app — his email says it's easier that way."
+      "location": null
     },
     {
       "id": "mcr6g24a8v9hbmijkmg0p449c4",
@@ -278,8 +257,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T19:30:00-05:00",
       "end": "2026-08-13T20:15:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Moved off Tuesday — the flight ate the night. Overnight gelling is actually better than four hours, so this lands fine.\n\nNo stove, no oven, nothing hot.\n\n☐ CHIA JARS × 3 — per jar: 2 tbsp chia · ¼ cup crushed walnuts · 1 tbsp peanut butter · ½ tsp cinnamon · ½ cup frozen berries · ¾ cup milk · 1 full scoop protein. Shake hard. 45g protein, 18g fiber each.\n\n☐ OVERNIGHT OATS × 3 — per jar: ½ cup ROLLED JUMBO oats · 2 tbsp ground flaxseed · 1 tbsp chia · 1 tbsp cacao · 1 scoop protein · 2 chopped dates · ½ tsp cinnamon · pinch turmeric · 1 cup milk. Dry first, then the milk. 48g protein, 25g fiber each.\n\n— everything below can slide to the weekend —\n\n☐ SPICE MIX — jar: salt, dried thyme, chili flakes, smoked paprika, garlic powder. Shake.\n☐ PICKLED ONIONS — thin-sliced red onion, equal parts water and vinegar, big pinch of salt.\n☐ FREEZER SMOOTHIE PACKS × 6 — per bag: spinach · 1 banana broken up · 1 cup frozen berries · ½ avocado.\n☐ FREEZE THE REST OF THE BANANAS.\n\nChia is the only thing in the whole system that genuinely can't be made to order — it needs four hours to gel. Do the first two and Friday's breakfast is already waiting.\n\nPotatoes, chicken, rice and the roasted veg fold into Sunday's family cook instead. Wed–Sat lunches come out of the house."
+      "location": null
     },
     {
       "id": "j19p934gkv6c4kf6hmfmf4nat0",
@@ -287,8 +265,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T20:15:00-05:00",
       "end": "2026-08-13T20:45:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "1) ⚠️ DO THIS FIRST — email Chapman Disability Services / Student Disability Services with the 2024 neuropsych PDF attached. Your 504 Plan does NOT follow you to college automatically; accommodations require registration + documentation, and it takes lead time. Classes start Aug 24. Ask for: extended time (1.5x) on all exams, testing in a smaller setting with breaks, one exam section at a time, class notes provided, preferential seating. All of it is written into the report — you're just forwarding what Dr. Victor already recommended.\n\n2) ⚠️ ORDER THE KITCHEN KIT — ship to Chapman Court, or reserve Target pickup for Saturday night after you land. You cannot pack a sheet pan. If there's no cookware Sunday morning, the first block session doesn't happen and week one is DoorDash.\n\n🔄 REVISED Aug 10 for the building-block system — fewer big containers, more jars.\n☐ 2 × half-sheet pans 18×13 — $12 (potatoes on one, veg on the other, same oven)\n☐ BLENDER — $35 (the all-purpose sauce AND every smoothie. This is now the most important item on the list, not optional)\n☐ Large pot + lid 4–6 qt — $20\n☐ Medium pot 2–3 qt — $12\n☐ 12\" skillet — $18 (chicken, fried rice, eggs)\n☐ Chef's knife + cutting board — $20, buy the sharp one\n☐ Colander, tongs, spatula, measuring cup, can opener, 2 oven mitts — $25\n☐ 32 oz containers, 6-pack — $8 (was 10 — you're storing PARTS now, not portioned meals)\n☐ 16 oz wide-mouth mason jars, 12-pack — $10 (three are permanent: spice mix, sauce, pickles. Rest are smoothie cups and overnight oats)\n☐ Heavy-duty foil + gallon freezer bags — $9\n~$169 total.\n\nOPTIONAL, genuinely worth it: a basic rice cooker, ~$20. Wash rice, equal parts water, walk away. Removes the one part of the block session you can actually screw up.\n\nSkip knife blocks, air fryers, anything with one job.\n\n3) Submit the Notify Me form at birthrightisraelexcel.com for Summer 2027.\n\n4) Email Sarowitz — \"Planning summer 2027 in Tel Aviv through Onward Israel, targeting internships at Israeli gaming companies. Do you know anyone in or near Israeli tech/gaming who'd take a 15-min call this fall?\""
+      "location": null
     },
     {
       "id": "av432ejp7akmd51e91niis62k0_20260813T233000Z",
@@ -296,8 +273,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T20:45:00-05:00",
       "end": "2026-08-13T22:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Actually free. Friends, home friends you haven't seen since May, whatever. Not YouTube. This block is what stops the channel from eating the whole day."
+      "location": null
     },
     {
       "id": "69ij670n77l5s17a0fceom7ol8_20260814T030000Z",
@@ -305,8 +281,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T22:00:00-05:00",
       "end": "2026-08-13T23:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Last thought = first thought. That's the whole reason this block exists.\n\n10:00 · SET UP (10 min)\n☐ Alarm across the room\n☐ Full glass of water next to it\n☐ Gym clothes on top of the glass\n☐ Journal open to tomorrow's page\n☐ Phone on the charger — same trip\n\n10:10 · READ (25 min)\nFiction. Paper. No screens, no checking the numbers.\n\n10:35 · SCORE THE DAY (5 min)\n1. What did I commit to today?\n2. Did I do it? Yes or no.\n3. What's tomorrow's one thing?\nWrite #3 at the bottom of the journal page. Effort only — never views.\n\n10:40 · SAY IT OUT LOUD (5 min)\nThe Mantra: \"I am committed to maintaining Unwavering Faith that I will publish a video every single day and take Clickster to 200,000 subscribers, and I will continue putting forth Extraordinary Effort until I do. No matter what — there is no other option.\"\nThen: \"I'm getting seven hours. I'm waking up at 6:00 rested.\"\n\n10:45 · MEDITATE TO SLEEP (15 min)\nLights off, in bed, on your back.\nIn through the nose 4. Out through the mouth 6. The long exhale is what drops you.\nThen body scan — feet, legs, hips, chest, arms, jaw, forehead. Release each one.\nDon't try to make it to the end. Falling asleep partway through is the point."
+      "location": null
     },
     {
       "id": "ourma2hoj6oo7632odpjbhlm3c_20260814T050000Z",
@@ -314,8 +289,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-13T23:00:00-05:00",
       "end": "2026-08-14T06:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Seven hours. Midnight to seven, Sunday through Thursday nights. No block Friday or Saturday — those are yours."
+      "location": null
     },
     {
       "id": "k4haksm7mb0a4t2ecs3eu7h33g_20260814T120000Z",
@@ -323,8 +297,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T06:00:00-05:00",
       "end": "2026-08-14T07:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": null
+      "location": null
     },
     {
       "id": "kfnpv5of62ds6kejjgr2ahbo84_20260814T120000Z",
@@ -332,8 +305,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T07:00:00-05:00",
       "end": "2026-08-14T08:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Home stretch gym — straight out of SAVERS. Keeps the routine alive between camp and school so week one at Chapman isn't a cold start."
+      "location": null
     },
     {
       "id": "n7r4ldf6ej8bceeve4hog4sckk_20260814T130000Z",
@@ -341,8 +313,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T08:00:00-05:00",
       "end": "2026-08-14T08:30:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Post-gym reset. Phone stays off until the work block starts."
+      "location": null
     },
     {
       "id": "uiisbjq6bincqfjffq5l28snr8",
@@ -350,8 +321,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T08:30:00-05:00",
       "end": "2026-08-14T13:30:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "📤 PUBLISHES TODAY — ⭐ LONG, THE ANCHOR.\n\n🔴 TITLE CHANGED — this came from YouTube, not from me. Studio's \"what people are looking for\" panel is showing the literal phrase \"the most realistic roblox iron man game.\" First-party search demand, and the outlier scan found zero Iron Man outliers this month. Documented demand, empty shelf.\n\nUSE: \"The MOST REALISTIC Roblox Iron Man Game (I Tested All 6)\"\nBackup: \"I Ranked Every Roblox Iron Man Game By How REALISTIC It Is\"\n\nGo with the first. It's the same shape as \"The BEST Roblox Iron Man Game\" — your #1 earner of all time — and it's short enough to read from a couch.\n\nCut from yesterday's batch. Commit to an order 6→1, judged on the same five things every time: suit-up, flight, repulsors, damage, HUD. A reason for every placement.\nEND QUESTION: \"I put ___ above ___. Tell me why I'm wrong.\" Schedule 9:00am CT.\n\n⚠️ AVD IS THE JOB. Your CTR is 7.9% on 4.4M impressions — packaging is already strong. Your AVD is 2:35 and that is what's costing you. Don't spend the whole promise in the first 30 seconds (that's exactly what the VR video did: best hook you've ever had, worst engagement you've ever had). Hold one suit back and say at 0:45 that you're holding it back.\n\n━━━━━━━━━━━━━━━━━━━━\n\n🎬 BATCH 2. Same rules: one take, no re-shoots, no editing today.\n\nTHE CORE SHOOT — Web Rush and Web-Verse BACK TO BACK, same session.\nWeb Rush 12,225. Web-Verse 742. Seventeen to one.\nLoad WEB-VERSE FIRST so the drop-off is visible when you switch. Show the animation gap and the bugs @lourrdit called out. The player numbers are your cold open.\n\nYou covered Web-Verse in Jan 2026 (84K) and never touched Web Rush. That's the story: you covered the one that lost.\n\nTHEN, for the ranking video:\n☐ Spider Simulator (1,867) — never covered\n☐ SpiderMan Simulator [BETA] (1,242) — never covered\n☐ Tangled-Web: Chronicles (166) — you covered it 2022, just shipped an UPDATE\n\nHONEST CONTEXT: DANT3 (47.5K, a week ago) and Drake Lytle (21K at 1.64x, three days ago) both made Web Rush videos. Neither broke out. Big player count, soft video demand — that's why this is two videos, not five, and why the collapse angle matters. It's the part neither of them did.\n\n📺 Shoot for a TV — 53.2% of your audience is on one. Big text, one element at a time.\n\nFEEDS: Tue 18 flagship · Fri 21 the Spider-Man ranking · Wed 19, Thu 20 Shorts."
+      "location": null
     },
     {
       "id": "ul4grcn5sam0q6ggp9v6d9cfb8_20260814T180000Z",
@@ -359,8 +329,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T13:30:00-05:00",
       "end": "2026-08-14T14:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Eat outside if you can. Bring the book. This is a real break, not a working lunch."
+      "location": null
     },
     {
       "id": "t030f58nhuvpcdm68fmdrt9q5o",
@@ -368,8 +337,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T14:00:00-05:00",
       "end": "2026-08-14T15:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Review what you got this morning and grab whatever's missing while you're still set up. Cheaper to fix now than to realize Monday that a game is underrepresented."
+      "location": null
     },
     {
       "id": "f59lknh8s3smuln3fk341q094s",
@@ -377,8 +345,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T15:00:00-05:00",
       "end": "2026-08-14T16:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Agenda: 1) Confirm Onward summer 2027, which organizer, budget. 2) The ONE network question — who do you and Eli know in Israeli tech/gaming, or one step from it? Intros only, I run the meetings. 3) Eli's advertising option stays alive as track two. 4) Set the monthly payment plan on the $1,885.90."
+      "location": null
     },
     {
       "id": "lu47bt2emvqltoq5nldf20b9cc",
@@ -386,8 +353,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T16:00:00-05:00",
       "end": "2026-08-14T17:30:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Offload the day's footage, back it up, build the Resolve project, sync and label clips by game. Boring, but doing it now means Sunday's edit block starts with actual editing instead of file management."
+      "location": null
     },
     {
       "id": "ov3ki8k7cthrj9orursgdcimk0_20260814T223000Z",
@@ -395,8 +361,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T17:30:00-05:00",
       "end": "2026-08-14T18:30:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Hard stop on work. Family dinner, then your time. Ten days at home before Chapman — Oliver and your parents count too."
+      "location": null
     },
     {
       "id": "av432ejp7akmd51e91niis62k0_20260814T233000Z",
@@ -404,8 +369,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T18:30:00-05:00",
       "end": "2026-08-14T22:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Actually free. Friends, home friends you haven't seen since May, whatever. Not YouTube. This block is what stops the channel from eating the whole day."
+      "location": null
     },
     {
       "id": "69ij670n77l5s17a0fceom7ol8_20260815T030000Z",
@@ -413,8 +377,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T22:00:00-05:00",
       "end": "2026-08-14T23:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Last thought = first thought. That's the whole reason this block exists.\n\n10:00 · SET UP (10 min)\n☐ Alarm across the room\n☐ Full glass of water next to it\n☐ Gym clothes on top of the glass\n☐ Journal open to tomorrow's page\n☐ Phone on the charger — same trip\n\n10:10 · READ (25 min)\nFiction. Paper. No screens, no checking the numbers.\n\n10:35 · SCORE THE DAY (5 min)\n1. What did I commit to today?\n2. Did I do it? Yes or no.\n3. What's tomorrow's one thing?\nWrite #3 at the bottom of the journal page. Effort only — never views.\n\n10:40 · SAY IT OUT LOUD (5 min)\nThe Mantra: \"I am committed to maintaining Unwavering Faith that I will publish a video every single day and take Clickster to 200,000 subscribers, and I will continue putting forth Extraordinary Effort until I do. No matter what — there is no other option.\"\nThen: \"I'm getting seven hours. I'm waking up at 6:00 rested.\"\n\n10:45 · MEDITATE TO SLEEP (15 min)\nLights off, in bed, on your back.\nIn through the nose 4. Out through the mouth 6. The long exhale is what drops you.\nThen body scan — feet, legs, hips, chest, arms, jaw, forehead. Release each one.\nDon't try to make it to the end. Falling asleep partway through is the point."
+      "location": null
     },
     {
       "id": "js3ukeppgs15lom3ngau2trsq4",
@@ -422,8 +385,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-14T23:00:00-05:00",
       "end": "2026-08-15T06:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": null
+      "location": null
     },
     {
       "id": "k4haksm7mb0a4t2ecs3eu7h33g_20260815T120000Z",
@@ -431,8 +393,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-15T06:00:00-05:00",
       "end": "2026-08-15T07:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": null
+      "location": null
     },
     {
       "id": "kfnpv5of62ds6kejjgr2ahbo84_20260815T120000Z",
@@ -440,8 +401,7 @@ window.CALENDAR_DATA = {
       "start": "2026-08-15T07:00:00-05:00",
       "end": "2026-08-15T08:00:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Home stretch gym — straight out of SAVERS. Keeps the routine alive between camp and school so week one at Chapman isn't a cold start."
+      "location": null
     },
     {
       "id": "n7r4ldf6ej8bceeve4hog4sckk_20260815T130000Z",
@@ -449,10 +409,559 @@ window.CALENDAR_DATA = {
       "start": "2026-08-15T08:00:00-05:00",
       "end": "2026-08-15T08:30:00-05:00",
       "allDay": false,
-      "location": null,
-      "description": "Post-gym reset. Phone stays off until the work block starts."
+      "location": null
+    },
+    {
+      "id": "x-35",
+      "title": "Eagles @ Ravens",
+      "start": "2026-08-15T18:00:00-05:00",
+      "end": "2026-08-15T21:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-1",
+      "title": "O-Week Event 1",
+      "start": "2026-08-18T23:00:00-05:00",
+      "end": "2026-08-19T00:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-2",
+      "title": "Jake Shleifer's Birthday",
+      "start": "2026-08-20",
+      "end": "2026-08-21",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-3",
+      "title": "O-Week (Invite Only)",
+      "start": "2026-08-20T23:00:00-05:00",
+      "end": "2026-08-21T00:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-4",
+      "title": "Griffin Dickman's Birthday",
+      "start": "2026-08-21",
+      "end": "2026-08-22",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-5",
+      "title": "O-Week Event 2",
+      "start": "2026-08-21T23:00:00-05:00",
+      "end": "2026-08-22T00:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-6",
+      "title": "O-Week Event 3",
+      "start": "2026-08-22T16:00:00-05:00",
+      "end": "2026-08-22T17:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-36",
+      "title": "Eagles @ Patriots",
+      "start": "2026-08-22T18:00:00-05:00",
+      "end": "2026-08-22T21:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-7",
+      "title": "Theo Troy's Birthday",
+      "start": "2026-08-23",
+      "end": "2026-08-24",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-8",
+      "title": "Matthew Kraft's Birthday",
+      "start": "2026-08-23",
+      "end": "2026-08-24",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-9",
+      "title": "First Day of School",
+      "start": "2026-08-24",
+      "end": "2026-08-25",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-37",
+      "title": "Bengals @ Eagles",
+      "start": "2026-08-28T19:00:00-05:00",
+      "end": "2026-08-28T22:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-10",
+      "title": "Vaughn Miguel's Birthday",
+      "start": "2026-08-30",
+      "end": "2026-08-31",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-11",
+      "title": "Chapter",
+      "start": "2026-08-30T18:00:00-05:00",
+      "end": "2026-08-30T19:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-43",
+      "title": "Ohio @ Nebraska",
+      "start": "2026-09-05T11:00:00-05:00",
+      "end": "2026-09-05T14:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-12",
+      "title": "Rush Kick-Off",
+      "start": "2026-09-05T14:00:00-05:00",
+      "end": "2026-09-05T15:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-49",
+      "title": "Texas State @ Texas",
+      "start": "2026-09-05T14:30:00-05:00",
+      "end": "2026-09-05T17:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-13",
+      "title": "Chapter",
+      "start": "2026-09-06T18:00:00-05:00",
+      "end": "2026-09-06T19:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-14",
+      "title": "NO SCHOOL",
+      "start": "2026-09-07",
+      "end": "2026-09-08",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-15",
+      "title": "Brandy Tonkin's Birthday",
+      "start": "2026-09-07",
+      "end": "2026-09-08",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-54",
+      "title": "Labor Day",
+      "start": "2026-09-07",
+      "end": "2026-09-08",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-16",
+      "title": "GREEK WEEK",
+      "start": "2026-09-08",
+      "end": "2026-09-12",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-17",
+      "title": "Rush Event 1",
+      "start": "2026-09-08T20:00:00-05:00",
+      "end": "2026-09-08T22:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-55",
+      "title": "Rosh Hashana Eve",
+      "start": "2026-09-11",
+      "end": "2026-09-12",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-56",
+      "title": "Rosh Hashana",
+      "start": "2026-09-12",
+      "end": "2026-09-13",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-18",
+      "title": "Rush Event 2",
+      "start": "2026-09-12T14:00:00-05:00",
+      "end": "2026-09-12T15:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-44",
+      "title": "Bowling Green @ Nebraska",
+      "start": "2026-09-12T18:00:00-05:00",
+      "end": "2026-09-12T21:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-50",
+      "title": "Ohio State @ Texas",
+      "start": "2026-09-12T18:30:00-05:00",
+      "end": "2026-09-12T21:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-19",
+      "title": "Country Music Live Event",
+      "start": "2026-09-12T20:00:00-05:00",
+      "end": "2026-09-12T23:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-57",
+      "title": "Rosh Hashana (Day 2)",
+      "start": "2026-09-13",
+      "end": "2026-09-14",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-38",
+      "title": "Commanders @ Eagles",
+      "start": "2026-09-13T15:25:00-05:00",
+      "end": "2026-09-13T18:25:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-20",
+      "title": "Chapter",
+      "start": "2026-09-13T18:00:00-05:00",
+      "end": "2026-09-13T19:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-58",
+      "title": "Gedaliah Fast",
+      "start": "2026-09-14",
+      "end": "2026-09-15",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-21",
+      "title": "Rush Event 3",
+      "start": "2026-09-14T20:00:00-05:00",
+      "end": "2026-09-14T22:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-22",
+      "title": "Voting",
+      "start": "2026-09-15T00:00:00-05:00",
+      "end": "2026-09-15T01:55:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-23",
+      "title": "Reed Claggett's Birthday",
+      "start": "2026-09-16",
+      "end": "2026-09-17",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-24",
+      "title": "Henry Findtner's Birthday",
+      "start": "2026-09-18",
+      "end": "2026-09-19",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-25",
+      "title": "Pref Dinner",
+      "start": "2026-09-18T20:15:00-05:00",
+      "end": "2026-09-18T22:15:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-26",
+      "title": "Bid Voting",
+      "start": "2026-09-18T23:00:00-05:00",
+      "end": "2026-09-19T01:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-27",
+      "title": "BID DAY",
+      "start": "2026-09-19",
+      "end": "2026-09-20",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-45",
+      "title": "North Dakota @ Nebraska",
+      "start": "2026-09-19T18:15:00-05:00",
+      "end": "2026-09-19T21:15:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-51",
+      "title": "UTSA @ Texas",
+      "start": "2026-09-19T19:00:00-05:00",
+      "end": "2026-09-19T22:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-59",
+      "title": "Yom Kippur Eve",
+      "start": "2026-09-20",
+      "end": "2026-09-21",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-39",
+      "title": "Eagles @ Titans",
+      "start": "2026-09-20T12:00:00-05:00",
+      "end": "2026-09-20T15:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-28",
+      "title": "Chapter",
+      "start": "2026-09-20T18:00:00-05:00",
+      "end": "2026-09-20T19:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-60",
+      "title": "Yom Kippur",
+      "start": "2026-09-21",
+      "end": "2026-09-22",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-61",
+      "title": "Sukkot Eve",
+      "start": "2026-09-25",
+      "end": "2026-09-26",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-29",
+      "title": "Cooper Belafsky's Birthday",
+      "start": "2026-09-26",
+      "end": "2026-09-27",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-46",
+      "title": "Nebraska @ MI State",
+      "start": "2026-09-26",
+      "end": "2026-09-27",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-62",
+      "title": "Sukkot (Day 1)",
+      "start": "2026-09-26",
+      "end": "2026-09-27",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-52",
+      "title": "Texas @ Tennessee",
+      "start": "2026-09-26T11:00:00-05:00",
+      "end": "2026-09-26T14:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-63",
+      "title": "Sukkot (Day 2)",
+      "start": "2026-09-27",
+      "end": "2026-09-28",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-30",
+      "title": "Chapter",
+      "start": "2026-09-27T18:00:00-05:00",
+      "end": "2026-09-27T19:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-64",
+      "title": "Sukkot (Day 3)",
+      "start": "2026-09-28",
+      "end": "2026-09-29",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-40",
+      "title": "Eagles @ Bears",
+      "start": "2026-09-28T19:15:00-05:00",
+      "end": "2026-09-28T22:15:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-31",
+      "title": "Ryan Quinn's Birthday",
+      "start": "2026-09-29",
+      "end": "2026-09-30",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-65",
+      "title": "Sukkot (Day 4)",
+      "start": "2026-09-29",
+      "end": "2026-09-30",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-66",
+      "title": "Sukkot (Day 5)",
+      "start": "2026-09-30",
+      "end": "2026-10-01",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-67",
+      "title": "Sukkot (Day 6)",
+      "start": "2026-10-01",
+      "end": "2026-10-02",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-68",
+      "title": "Sukkot (Day 7) / Hoshanah Rabah",
+      "start": "2026-10-02",
+      "end": "2026-10-03",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-47",
+      "title": "Maryland @ Nebraska",
+      "start": "2026-10-03",
+      "end": "2026-10-04",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-69",
+      "title": "Shemini Atzeret / Simchat Torah",
+      "start": "2026-10-03",
+      "end": "2026-10-04",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-41",
+      "title": "Rams @ Eagles",
+      "start": "2026-10-04T12:00:00-05:00",
+      "end": "2026-10-04T15:00:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-32",
+      "title": "Chapter",
+      "start": "2026-10-04T18:00:00-05:00",
+      "end": "2026-10-04T19:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-33",
+      "title": "Akshay Vishwanath's Birthday",
+      "start": "2026-10-09",
+      "end": "2026-10-10",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-48",
+      "title": "Indiana @ Nebraska",
+      "start": "2026-10-10",
+      "end": "2026-10-11",
+      "allDay": true,
+      "location": null
+    },
+    {
+      "id": "x-53",
+      "title": "Texas @ Oklahoma",
+      "start": "2026-10-10T14:30:00-05:00",
+      "end": "2026-10-10T17:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-42",
+      "title": "Eagles @ Jaguars",
+      "start": "2026-10-11T08:30:00-05:00",
+      "end": "2026-10-11T11:30:00-05:00",
+      "allDay": false,
+      "location": null
+    },
+    {
+      "id": "x-34",
+      "title": "Chapter",
+      "start": "2026-10-11T18:00:00-05:00",
+      "end": "2026-10-11T19:30:00-05:00",
+      "allDay": false,
+      "location": null
     }
-  ],
-  "syncedAt": "2026-08-12T17:24:43Z"
-}
-;
+  ]
+};

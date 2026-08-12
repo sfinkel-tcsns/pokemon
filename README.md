@@ -21,22 +21,35 @@ python3 -m http.server 8000
 ## What's here
 
 - **Today** — a timeline of your day with a live "now" line, all-day briefs pinned on
-  top, and events auto-color-coded by type.
+  top, and events color-coded by type.
 - **Week** — a 7-day grid; today is highlighted.
 - **Upcoming** — everything ahead, grouped by day.
 - **Stat strip** — event count, deep-work hours, scheduled load, and what's up next.
 - Dark/light theme toggle (remembers your choice).
 
-Events are auto-categorized into **Work · Health · Meals · Rest · Travel · Briefs ·
-Personal** from their titles (see `categorize()` in `app.js` to tweak the rules).
+All of your calendars — primary, Delt, Eagles, Nebraska, Texas, and holidays — are
+merged into **one** unified calendar so the view stays calm. Each event is colored by
+life-**category**, auto-derived from its title (see `categorize()` in `app.js`):
+
+**Work · Health · Meals · Social · Travel · Rest · Briefs · Personal**
+
+- **Social** covers Delt (chapter, rush, O-week), game days, and friend time.
+- **Briefs** covers all-day items — holidays, birthdays, and the news/coach cards.
+- **Work / Rest** drive the "focus / work" and "scheduled load" stats.
 
 ## Data & refreshing
 
-The calendar data lives in two files:
+The calendar data is assembled by `data/build.js` from two snapshots into the files
+the page loads:
 
-- `data/events.json` — the canonical snapshot (handy for tooling).
-- `data/events.js` — the same data wrapped so the page loads with zero setup
-  (`file://` can't `fetch` a local JSON file).
+- `data/primary.json` — your primary Google Calendar snapshot.
+- `data/secondary.json` — the other calendars (Delt, sports, holidays), compact form.
+- `data/build.js` — merges them into one unified list → writes:
+  - `data/events.json` — the canonical merged snapshot (handy for tooling).
+  - `data/events.js` — the same data wrapped so the page loads with zero setup
+    (`file://` can't `fetch` a local JSON file).
+
+Re-run the merge any time with `node data/build.js`.
 
 This is a **snapshot**, so it goes stale. To refresh, just ask Claude in a session
 with your Google Calendar connected:
@@ -64,5 +77,8 @@ The sidebar shows where this is heading. The calendar is the working core; these
 | `index.html` | App shell + layout |
 | `styles.css` | Design system (tokens, dark/light) |
 | `app.js` | Rendering + view logic |
-| `data/events.json` | Calendar snapshot (canonical) |
+| `data/build.js` | Merges the snapshots into the unified dataset |
+| `data/primary.json` | Primary calendar snapshot |
+| `data/secondary.json` | Other calendars (Delt, sports, holidays) |
+| `data/events.json` | Unified merged snapshot (canonical) |
 | `data/events.js` | Same data, loadable without a server |

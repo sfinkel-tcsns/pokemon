@@ -20,8 +20,9 @@
   --c-meal: #f5a742;
   --c-rest: #8b7cf6;
   --c-travel: #56b8e6;
-  --c-brief: #e06c9f;
-  --c-personal: #9aa1b1;
+  --c-social: #ec6f9e;
+  --c-brief: #9aa1b1;
+  --c-personal: #6b7280;
 }
 
 :root[data-theme="light"] {
@@ -154,7 +155,7 @@ body {
 .topbar h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
 .sub { color: var(--text-dim); font-size: 14px; margin-top: 2px; }
 
-.legend { display: flex; flex-wrap: wrap; gap: 10px 14px; justify-content: flex-end; max-width: 420px; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 14px; justify-content: flex-end; max-width: 440px; }
 .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
 .legend-dot { width: 9px; height: 9px; border-radius: 3px; }
 
