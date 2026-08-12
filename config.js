@@ -6,7 +6,7 @@ window.LIFEOS_CONFIG = {
   // 1) Paste your OAuth Client ID from Google Cloud Console here.
   //    See SETUP.md for the 10-minute walkthrough.
   //    Looks like: "1234567890-abcdef.apps.googleusercontent.com"
-  googleClientId: "",
+  googleClientId: "904688786026-81ccg4tpl8kk455psbcg3mjsba7v9bp5.apps.googleusercontent.com",
 
   // 2) Calendars to leave OUT of the merged view (matched by name).
   excludeCalendars: ["Phases of the Moon"],
