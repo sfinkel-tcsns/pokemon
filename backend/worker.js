@@ -89,44 +89,64 @@ export default {
       return cors(json({ access_token: tok.access_token, expires_in: tok.expires_in }), site);
     }
 
-    // 4) Canvas homework (optional) — proxied so the token stays server-side
-    //    and CORS works. Gated behind a valid Life OS session.
-    //    Needs env vars: CANVAS_BASE_URL, CANVAS_TOKEN
+    // 4) Canvas homework (optional) — reads your personal Canvas Calendar Feed
+    //    (.ics), which needs NO admin token. Gated behind a valid Life OS session.
+    //    Needs env var: CANVAS_ICS_URL
     if (url.pathname === "/canvas" && request.method === "POST") {
       let session;
       try { session = (await request.json()).session; } catch (e) {}
       if (!session) return cors(json({ error: "no session" }, 400), site);
       try { await decrypt(session, env.ENC_SECRET); } catch (e) { return cors(json({ error: "unauthorized" }, 401), site); }
 
-      const base = String(env.CANVAS_BASE_URL || "").replace(/\/+$/, "");
-      if (!base || !env.CANVAS_TOKEN) return cors(json({ error: "Canvas not configured" }, 400), site);
+      const feed = env.CANVAS_ICS_URL;
+      if (!feed) return cors(json({ error: "Canvas not configured" }, 400), site);
+      const text = await fetch(feed).then((r) => (r.ok ? r.text() : null));
+      if (!text) return cors(json({ error: "Canvas feed error" }, 502), site);
 
-      const today = new Date().toISOString().slice(0, 10);
-      const r = await fetch(base + "/api/v1/planner/items?start_date=" + today + "&per_page=50",
-        { headers: { Authorization: "Bearer " + env.CANVAS_TOKEN } });
-      if (!r.ok) return cors(json({ error: "Canvas API " + r.status }, 502), site);
-
-      const items = await r.json();
-      const assignments = (Array.isArray(items) ? items : [])
-        .filter((it) => ["assignment", "quiz", "discussion_topic"].includes(it.plannable_type))
-        .map((it) => ({ it, due: (it.plannable && it.plannable.due_at) || it.plannable_date }))
-        .filter((x) => x.due && !(x.it.submissions && (x.it.submissions.submitted || x.it.submissions.graded || x.it.submissions.excused)))
-        .map((x) => ({
-          title: (x.it.plannable && x.it.plannable.title) || x.it.plannable_type,
-          course: x.it.context_name || "",
-          dueAt: x.due,
-          url: x.it.html_url ? (x.it.html_url.startsWith("http") ? x.it.html_url : base + x.it.html_url) : base,
-          type: x.it.plannable_type,
-          missing: !!(x.it.submissions && x.it.submissions.missing),
-        }))
-        .sort((a, b) => String(a.dueAt).localeCompare(String(b.dueAt)))
-        .slice(0, 12);
+      const now = Date.now();
+      const assignments = parseICS(text)
+        .filter((e) => e.start && e.start.getTime() > now - 12 * 3600 * 1000) // today onward
+        .sort((a, b) => a.start - b.start)
+        .slice(0, 12)
+        .map((e) => ({ title: e.title, course: e.course, dueAt: e.start.toISOString(), url: e.url, type: "assignment", missing: false }));
       return cors(json({ assignments }), site);
     }
 
     return new Response("Life OS auth backend is running.", { status: 200 });
   },
 };
+
+/* ---------- iCalendar parsing (for the Canvas feed) ---------- */
+function parseICS(text) {
+  text = text.replace(/\r?\n[ \t]/g, ""); // unfold wrapped lines
+  const out = [];
+  const blocks = text.split("BEGIN:VEVENT").slice(1);
+  for (const b of blocks) {
+    const body = b.split("END:VEVENT")[0];
+    const get = (k) => { const m = new RegExp("^" + k + "[^:\\r\\n]*:(.*)$", "m").exec(body); return m ? m[1].trim() : null; };
+    const dt = get("DTSTART");
+    if (!dt) continue;
+    const start = parseICSDate(dt);
+    if (!start) continue;
+    const summary = unescapeICS(get("SUMMARY") || "");
+    const urlv = get("URL") || "";
+    let title = summary, course = "";
+    const m = /^(.*)\s\[(.+?)\]\s*$/.exec(summary);
+    if (m) { title = m[1].trim(); course = m[2].trim(); }
+    out.push({ title, course, start, url: urlv });
+  }
+  return out;
+}
+function parseICSDate(s) {
+  const m = /(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?/.exec(s);
+  if (!m) return null;
+  const Y = +m[1], Mo = +m[2] - 1, D = +m[3];
+  if (m[4] == null) return new Date(Date.UTC(Y, Mo, D));
+  return new Date(Date.UTC(Y, Mo, D, +m[4], +m[5], +m[6])); // treat as UTC (feed uses Z)
+}
+function unescapeICS(s) {
+  return s.replace(/\\n/gi, " ").replace(/\\,/g, ",").replace(/\\;/g, ";").replace(/\\\\/g, "\\");
+}
 
 /* ---------- helpers ---------- */
 async function postForm(u, obj) {

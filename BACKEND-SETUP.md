@@ -78,14 +78,15 @@ connected on that device from now on. **Disconnect** on the site fully logs out.
 ## Optional: Canvas homework in the Morning brief
 
 Shows your upcoming Canvas assignments (with due dates) in the brief's **School**
-section. The token stays in the Worker; the site never sees it.
+section — using your personal **Calendar Feed**, so it needs **no access token
+and no Canvas admin** (works even when self-serve tokens are disabled).
 
-1. **Generate a Canvas token:** in Canvas → **Account → Settings** → scroll to
-   **Approved Integrations** → **+ New Access Token** → purpose "Life OS" → leave
-   expiry blank → **Generate**. Copy the token (shown once).
-2. **Add two Worker variables** (Worker → Settings → Variables and Secrets):
-   - `CANVAS_BASE_URL` = your Canvas URL, e.g. `https://canvas.chapman.edu`
-   - `CANVAS_TOKEN` = the token from step 1 *(mark as **Secret**)*
+1. **Copy your Canvas Calendar Feed:** in Canvas → **Calendar** → scroll to the
+   bottom of the right-hand sidebar → **Calendar Feed** → copy the `.ics` URL
+   (looks like `https://canvas.<school>.edu/feeds/calendars/user_XXXXXXXX.ics`).
+   Treat it like a password — anyone with it can read your calendar.
+2. **Add one Worker variable** (Worker → Settings → Variables and Secrets):
+   - `CANVAS_ICS_URL` = the feed URL from step 1 *(mark as **Secret**)*
 3. **Re-paste the Worker code** (it now has a `/canvas` endpoint): open
    `backend/worker.js`, copy all, paste over the Worker's code, **Deploy**.
 4. Reload the site — assignments appear under **School** in the Morning brief.
