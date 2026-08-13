@@ -49,13 +49,13 @@
   },
   "school": { "status": "coming", "note": "Outlook email + Canvas assignments — next to wire up." },
   "music": {
-    "vibe": "Eclectic sunrise",
-    "note": "Tuned to your Replay — Radiohead, Dead Calm, M83, C418, city-pop & film scores.",
+    "vibe": "Cinematic morning",
+    "note": "Tuned to your all-time Replay — film scores, indie-folk, Radiohead & city-pop.",
     "picks": [
-      { "title": "Weird Fishes / Arpeggi", "artist": "Radiohead", "note": "your most-played artist" },
-      { "title": "Outro", "artist": "M83", "note": "cinematic sunrise" },
-      { "title": "Blue Lagoon", "artist": "Masayoshi Takanaka", "note": "sunny city-pop" },
-      { "title": "jazz is for ordinary people", "artist": "berlioz", "note": "jazzy lo-fi to ease in" }
+      { "title": "Song on the Beach", "artist": "Arcade Fire & Owen Pallett", "note": "your all-time #1 (from Her)" },
+      { "title": "Northern Sky", "artist": "Nick Drake", "note": "folk sunrise" },
+      { "title": "Radio Rio", "artist": "Masayoshi Takanaka", "note": "city-pop sun" },
+      { "title": "Evergreen", "artist": "Richy Mitch & The Coal Miners", "note": "for the indie-folk lane" }
     ]
   }
 }
