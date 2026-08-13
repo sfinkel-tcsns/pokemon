@@ -21,5 +21,5 @@ window.LIFEOS_CONFIG = {
   // 5) Permanent login (optional). Paste your auth Worker URL here to stay
   //    logged in forever on the device (see BACKEND-SETUP.md). Leave empty to
   //    use the in-browser login instead.
-  backendUrl: "",
+  backendUrl: "https://lifeos-auth.thesimonfinkel.workers.dev",
 };
