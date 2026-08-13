@@ -49,13 +49,13 @@
   },
   "school": { "status": "coming", "note": "Outlook email + Canvas assignments — next to wire up." },
   "music": {
-    "vibe": "Indie morning",
-    "note": "Tuned to your Replay — Dead Calm, Arcade Fire, C418, Alex G, Grateful Dead.",
+    "vibe": "Eclectic sunrise",
+    "note": "Tuned to your Replay — Radiohead, Dead Calm, M83, C418, city-pop & film scores.",
     "picks": [
-      { "title": "Wake Up", "artist": "Arcade Fire", "note": "morning anthem, your #2" },
-      { "title": "Runner", "artist": "Alex G" },
-      { "title": "Sweden", "artist": "C418", "note": "your #3 artist" },
-      { "title": "Inside Out", "artist": "Duster", "note": "for the Dead Calm slowcore lane" }
+      { "title": "Weird Fishes / Arpeggi", "artist": "Radiohead", "note": "your most-played artist" },
+      { "title": "Outro", "artist": "M83", "note": "cinematic sunrise" },
+      { "title": "Blue Lagoon", "artist": "Masayoshi Takanaka", "note": "sunny city-pop" },
+      { "title": "jazz is for ordinary people", "artist": "berlioz", "note": "jazzy lo-fi to ease in" }
     ]
   }
 }
