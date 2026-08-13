@@ -443,9 +443,64 @@ function ytDisconnect() {
   }
 }
 
+/* ---------- Morning brief view ---------- */
+function renderMorning() {
+  const B = window.BRIEF_DATA;
+  document.getElementById("stats").innerHTML = "";
+  const view = document.getElementById("view");
+  if (!B) { view.innerHTML = `<div class="empty">No brief yet — ask Claude to run your morning brief.</div>`; return; }
+
+  const forYou = (B.forYou || []).map((f) => `
+    <div class="fy-card">
+      <span class="fy-tag" style="background:${f.color}22;color:${f.color}">${escapeHtml(f.tag)}</span>
+      <div class="fy-text">${escapeHtml(f.text)}</div>
+      <div class="fy-action">→ ${escapeHtml(f.action)}</div>
+      ${f.url ? `<a class="fy-src" href="${escapeHtml(f.url)}" target="_blank" rel="noopener">source ↗</a>` : ""}
+    </div>`).join("");
+
+  const ny = B.needsYou || { count: 0, items: [] };
+  const needs = (ny.items || []).map((i) => `
+    <a class="need-item" href="${escapeHtml(i.url || "#")}" target="_blank" rel="noopener">
+      <div class="need-title">${escapeHtml(i.title)}</div>
+      <div class="need-why">${escapeHtml(i.why)}</div>
+      <div class="need-from">${escapeHtml(i.from || "")} ↗</div>
+    </a>`).join("");
+
+  view.innerHTML = `
+    <div class="brief">
+      <div class="quote-card">
+        <div class="quote-text">“${escapeHtml(B.quote.text)}”</div>
+        <div class="quote-author">— ${escapeHtml(B.quote.author)}</div>
+      </div>
+      <div class="brief-grid">
+        <div class="brief-main">
+          <div class="sec-label">Today's headline</div>
+          <a class="headline-card" href="${escapeHtml(B.headline.url)}" target="_blank" rel="noopener">
+            <div class="headline-title">${escapeHtml(B.headline.title)}</div>
+            <div class="headline-sum">${escapeHtml(B.headline.summary)}</div>
+            <div class="headline-src">${escapeHtml(B.headline.source)} ↗</div>
+          </a>
+          <div class="sec-label">For you</div>
+          <div class="fy-grid">${forYou}</div>
+        </div>
+        <div class="brief-side">
+          <div class="sec-label">Needs you ${ny.count ? `<span class="need-count">${ny.count}</span>` : ""}</div>
+          ${ny.count ? `<div class="needs">${needs}</div>` : `<div class="soon-card">Inbox clear — nothing needs you ✨</div>`}
+          ${ny.filtered ? `<div class="need-filtered">${ny.filtered} newsletters &amp; receipts filtered out</div>` : ""}
+          <div class="sec-label">School</div>
+          <div class="soon-card">📚 ${escapeHtml((B.school && B.school.note) || "Outlook + Canvas — coming next.")}</div>
+          <div class="sec-label">Soundtrack</div>
+          <div class="soon-card">🎧 ${escapeHtml((B.music && B.music.note) || "Apple Music — coming.")}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
 /* ---------- view switching ---------- */
-let CURRENT = "today";
+let CURRENT = "morning";
+const MORNING_TITLE = "Good morning" + (window.BRIEF_DATA && window.BRIEF_DATA.greetingName ? ", " + window.BRIEF_DATA.greetingName : "");
 const VIEWS = {
+  morning:  { title: MORNING_TITLE, sub: () => (window.BRIEF_DATA ? new Date(window.BRIEF_DATA.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" }) : ""), render: renderMorning },
   today:    { title: "Today",     sub: () => prettyDate(STATE.anchor) + (STATE.anchor !== STATE.today ? " (next day with events)" : ""), render: renderToday },
   week:     { title: "This Week", sub: () => "7-day overview", render: renderWeek },
   upcoming: { title: "Upcoming",  sub: () => `${STATE.events.filter((e) => e.key >= STATE.today).length || STATE.events.length} events ahead`, render: renderUpcoming },
@@ -458,9 +513,9 @@ function render() {
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.classList.toggle("active", b.dataset.view === CURRENT));
 
-  if (CURRENT === "youtube") {
+  if (CURRENT === "morning" || CURRENT === "youtube") {
     document.getElementById("legend").innerHTML = "";
-    renderYouTube();
+    v.render();
     return;
   }
   renderLegend();
