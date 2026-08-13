@@ -625,11 +625,40 @@ function fmtMoney(n, dec) {
   dec = dec || 0;
   return "$" + (Number(n) || 0).toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
 }
+let LIVE_MONEY = null;   // last good Plaid payload (also cached in localStorage)
+let MONEY_BUSY = false;  // guards against overlapping refreshes
+
+function moneyControls() {
+  const P = window.LifeOSPlaid;
+  if (!P || !P.configured()) return "";
+  if (P.hasItems()) {
+    const insts = P.institutions();
+    return `<div class="money-ctl">
+      <span class="money-conn"><span class="live-dot"></span>${insts.length} connected${insts.length ? " · " + insts.map(escapeHtml).join(", ") : ""}</span>
+      <span class="money-btns">
+        <button class="mbtn" id="moneyRefresh">↻ Refresh</button>
+        <button class="mbtn" id="moneyAdd">+ Add bank</button>
+        <button class="mbtn ghost" id="moneyDisc">Disconnect</button>
+      </span>
+    </div>`;
+  }
+  return `<div class="money-ctl">
+    <span class="money-conn">Connect your banks for automatic net worth, spending &amp; subscriptions.</span>
+    <span class="money-btns"><button class="mbtn accent" id="moneyConnect">🔗 Connect a bank</button></span>
+  </div>`;
+}
+
 function renderMoney() {
-  const M = window.MONEY_DATA;
+  const M = LIVE_MONEY || window.MONEY_DATA;
   const stats = document.getElementById("stats");
   const view = document.getElementById("view");
-  if (!M) { stats.innerHTML = ""; view.innerHTML = `<div class="empty">No money data yet — send your Rocket Money screenshots.</div>`; return; }
+  const ctl = moneyControls();
+  if (!M) {
+    stats.innerHTML = "";
+    view.innerHTML = ctl + `<div class="empty">${window.LifeOSPlaid && window.LifeOSPlaid.configured() ? "Connect a bank above to see your money automatically." : "No money data yet — send your Rocket Money screenshots."}</div>`;
+    wireMoney();
+    return;
+  }
 
   const subsTotal = (M.subscriptions || []).reduce((s, x) => s + (x.cadence === "yr" ? x.amount / 12 : x.amount), 0);
   const budgetLeft = (M.month ? M.month.budget - M.month.spent : 0);
@@ -676,22 +705,81 @@ function renderMoney() {
       <span class="sub-amt">${fmtMoney(s.amount, s.amount % 1 ? 2 : 0)}<span class="sub-cad">/${escapeHtml(s.cadence || "mo")}</span></span>
     </div>`).join("");
 
+  const banner = M.live
+    ? (M.syncing
+        ? `<div class="insight">⏳ Bank connected — transactions are still syncing on Plaid's side. Balances are live; spending &amp; subscriptions fill in within a minute. Hit Refresh shortly.</div>`
+        : `<div class="insight ok">✅ Live from your banks${M.updatedAt ? ` · updated ${escapeHtml(M.updatedAt)}` : ""}.</div>`)
+    : (M.sample ? `<div class="insight">💡 Sample data — connect a bank above (or send Rocket Money screenshots) for your real numbers.</div>` : "");
+
   view.innerHTML = `
-    ${M.sample ? `<div class="insight">💡 Sample data — send your Rocket Money screenshots (net worth, subscriptions, spending, budget) and I'll drop in your real numbers.</div>` : ""}
+    ${ctl}
+    ${banner}
     <div class="yt-grid">
       <div class="yt-col">
         <div class="yt-section-title">This month · ${escapeHtml(M.month ? M.month.label : "")}</div>
         ${budget}
         <div class="yt-section-title">Spending by category</div>
-        <div class="traffic money">${cats}</div>
+        <div class="traffic money">${cats || `<div class="acct-empty">No categorized spending yet.</div>`}</div>
       </div>
       <div class="yt-side">
         <div class="yt-section-title">Net worth</div>
-        <div class="traffic money">${accounts}</div>
+        <div class="traffic money">${accounts || `<div class="acct-empty">No accounts yet.</div>`}</div>
         <div class="yt-section-title">Subscriptions · ${fmtMoney(subsTotal)}/mo</div>
-        <div class="subs">${subs}</div>
+        <div class="subs">${subs || `<div class="acct-empty">No recurring charges detected yet.</div>`}</div>
       </div>
     </div>`;
+  wireMoney();
+}
+
+// Refresh live money data from Plaid and re-render.
+async function refreshMoney() {
+  const P = window.LifeOSPlaid;
+  if (!P || !P.hasItems() || MONEY_BUSY) return;
+  MONEY_BUSY = true;
+  const btn = document.getElementById("moneyRefresh");
+  if (btn) { btn.textContent = "↻ Syncing…"; btn.disabled = true; }
+  try {
+    const data = await P.fetchData();
+    if (data) { LIVE_MONEY = data; if (CURRENT === "money") renderMoney(); }
+  } catch (e) {
+    const b = document.querySelector(".money-conn");
+    if (b) b.innerHTML = `<span style="color:var(--danger,#e0454f)">Sync failed: ${escapeHtml(String(e.message || e))}</span>`;
+  } finally {
+    MONEY_BUSY = false;
+    const b2 = document.getElementById("moneyRefresh");
+    if (b2) { b2.textContent = "↻ Refresh"; b2.disabled = false; }
+  }
+}
+
+// Attach handlers to whatever money controls are currently on screen.
+function wireMoney() {
+  const P = window.LifeOSPlaid;
+  if (!P) return;
+  const connectFlow = async (btnId) => {
+    const btn = document.getElementById(btnId);
+    if (btn) { btn.disabled = true; btn.dataset.t = btn.textContent; btn.textContent = "Opening…"; }
+    try {
+      await P.connect();
+      await refreshMoney();
+      if (CURRENT === "money") renderMoney();
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = btn.dataset.t || "Connect"; }
+      if (!(e && e.cancelled)) alert("Couldn't connect: " + (e.message || e));
+    }
+  };
+  const c = document.getElementById("moneyConnect");
+  if (c) c.onclick = () => connectFlow("moneyConnect");
+  const a = document.getElementById("moneyAdd");
+  if (a) a.onclick = () => connectFlow("moneyAdd");
+  const r = document.getElementById("moneyRefresh");
+  if (r) r.onclick = () => refreshMoney();
+  const d = document.getElementById("moneyDisc");
+  if (d) d.onclick = () => {
+    if (!confirm("Disconnect all banks? Your dashboard will fall back to sample data.")) return;
+    P.disconnect();
+    LIVE_MONEY = null;
+    renderMoney();
+  };
 }
 
 /* ---------- view switching ---------- */
@@ -722,7 +810,12 @@ function render() {
   renderStats();
   v.render();
 }
-function switchView(name) { CURRENT = name; render(); }
+function switchView(name) {
+  CURRENT = name;
+  render();
+  // Opening Money with banks connected → quietly pull fresh numbers.
+  if (name === "money" && window.LifeOSPlaid && window.LifeOSPlaid.hasItems()) refreshMoney();
+}
 
 /* ---------- sync label + connection UI ---------- */
 function setSync(mode, syncedAt) {
@@ -806,6 +899,9 @@ function goDisconnect() {
 /* ---------- boot ---------- */
 function boot() {
   renderLegend();
+
+  // Show last-known live money instantly; a refresh happens when the tab opens.
+  if (window.LifeOSPlaid && window.LifeOSPlaid.cache()) LIVE_MONEY = window.LifeOSPlaid.cache();
 
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.addEventListener("click", () => switchView(b.dataset.view)));

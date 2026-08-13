@@ -18,6 +18,20 @@
      GOOGLE_CLIENT_SECRET   your OAuth client secret
      ENC_SECRET             any long random string (used to encrypt the token)
      SITE_ORIGIN            e.g. https://sfinkel-tcsns.github.io
+
+   Optional (Money tab — automatic bank sync via Plaid):
+     PLAID_CLIENT_ID        from dashboard.plaid.com
+     PLAID_SECRET           the secret for the env you're using
+     PLAID_ENV              "sandbox" (default) or "production"
+     PLAID_REDIRECT_URI     only for OAuth banks in production (e.g. Chase):
+                            https://sfinkel-tcsns.github.io/  (also register it in Plaid)
+
+   Plaid flow (same stateless, Safari-proof pattern as Google):
+     POST /plaid/link-token -> mint a Link token to open the Plaid popup
+     POST /plaid/exchange   -> swap the public_token for a permanent access
+                              token, AES-encrypt it, hand ciphertext to the site
+     POST /plaid/data       -> site sends its encrypted item tokens; we decrypt,
+                              call Plaid, return net worth + spending + subs
    =========================================================== */
 
 const SCOPES = [
@@ -133,9 +147,166 @@ export default {
       return cors(json({ assignments }), site);
     }
 
+    /* ---------- Money: Plaid bank sync ---------- */
+
+    // P1) Mint a Link token — opens the Plaid popup on the site.
+    if (url.pathname === "/plaid/link-token" && request.method === "POST") {
+      if (!env.PLAID_CLIENT_ID || !env.PLAID_SECRET) return cors(json({ error: "Plaid not configured" }, 400), site);
+      const body = {
+        user: { client_user_id: "lifeos-user" },
+        client_name: "Life OS",
+        products: ["transactions"],
+        country_codes: ["US"],
+        language: "en",
+      };
+      if (env.PLAID_REDIRECT_URI) body.redirect_uri = env.PLAID_REDIRECT_URI;
+      const r = await plaidPost(env, "/link/token/create", body);
+      if (!r.link_token) return cors(json({ error: r.error_message || r.error_code || "link_token failed" }, 400), site);
+      return cors(json({ link_token: r.link_token }), site);
+    }
+
+    // P2) Exchange the public_token for a permanent access token, encrypt it.
+    if (url.pathname === "/plaid/exchange" && request.method === "POST") {
+      if (!env.PLAID_CLIENT_ID || !env.PLAID_SECRET) return cors(json({ error: "Plaid not configured" }, 400), site);
+      let public_token;
+      try { public_token = (await request.json()).public_token; } catch (e) {}
+      if (!public_token) return cors(json({ error: "no public_token" }, 400), site);
+      const ex = await plaidPost(env, "/item/public_token/exchange", { public_token });
+      if (!ex.access_token) return cors(json({ error: ex.error_message || "exchange failed" }, 400), site);
+      let institution = "Bank";
+      try {
+        const it = await plaidPost(env, "/item/get", { access_token: ex.access_token });
+        const instId = it.item && it.item.institution_id;
+        if (instId) {
+          const inst = await plaidPost(env, "/institutions/get_by_id", { institution_id: instId, country_codes: ["US"] });
+          institution = (inst.institution && inst.institution.name) || institution;
+        }
+      } catch (e) {}
+      const enc = await encrypt(ex.access_token, env.ENC_SECRET);
+      return cors(json({ item: enc, institution }), site);
+    }
+
+    // P3) Aggregate all connected items into the Money-tab shape.
+    if (url.pathname === "/plaid/data" && request.method === "POST") {
+      if (!env.PLAID_CLIENT_ID || !env.PLAID_SECRET) return cors(json({ error: "Plaid not configured" }, 400), site);
+      let items, budget;
+      try { const b = await request.json(); items = b.items; budget = b.budget; } catch (e) {}
+      if (!Array.isArray(items) || !items.length) return cors(json({ error: "no items" }, 400), site);
+      const tokens = [];
+      for (const enc of items) { try { tokens.push(await decrypt(enc, env.ENC_SECRET)); } catch (e) {} }
+      if (!tokens.length) return cors(json({ error: "bad items" }, 400), site);
+      try {
+        const money = await buildMoney(env, tokens, budget);
+        return cors(json(money), site);
+      } catch (e) {
+        return cors(json({ error: String((e && e.message) || e) }, 502), site);
+      }
+    }
+
     return new Response("Life OS auth backend is running.", { status: 200 });
   },
 };
+
+/* ---------- Plaid helpers ---------- */
+function plaidBase(env) { return "https://" + (env.PLAID_ENV || "sandbox") + ".plaid.com"; }
+async function plaidPost(env, path, body) {
+  const r = await fetch(plaidBase(env) + path, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(Object.assign({ client_id: env.PLAID_CLIENT_ID, secret: env.PLAID_SECRET }, body)),
+  });
+  return r.json();
+}
+function ymd(d) { return d.toISOString().slice(0, 10); }
+function titleCase(s) {
+  return String(s || "").toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+// Build the Money-tab payload (netWorth, accounts, month, spendingByCategory,
+// subscriptions) from one or more Plaid access tokens.
+async function buildMoney(env, tokens, budget) {
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const monthLabel = now.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" });
+
+  const accounts = [];
+  let netWorth = 0;
+  const txns = [];
+  const subs = [];
+  let syncing = false;
+
+  for (const access_token of tokens) {
+    // Balances → accounts + net worth
+    const bal = await plaidPost(env, "/accounts/balance/get", { access_token });
+    for (const a of (bal.accounts || [])) {
+      const cur = (a.balances && (a.balances.current != null ? a.balances.current : a.balances.available)) || 0;
+      const liability = a.type === "credit" || a.type === "loan";
+      netWorth += liability ? -cur : cur;
+      accounts.push({
+        name: a.name || a.official_name || titleCase(a.subtype || a.type),
+        type: titleCase(a.subtype || a.type),
+        balance: cur,
+        liability,
+      });
+    }
+
+    // Transactions this month → spent + categories
+    const tx = await plaidPost(env, "/transactions/get", {
+      access_token,
+      start_date: ymd(monthStart),
+      end_date: ymd(now),
+      options: { count: 250, offset: 0 },
+    });
+    if (tx.error_code === "PRODUCT_NOT_READY") { syncing = true; }
+    for (const t of (tx.transactions || [])) txns.push(t);
+
+    // Recurring outflows → subscriptions (best effort)
+    try {
+      const rec = await plaidPost(env, "/transactions/recurring/get", { access_token });
+      for (const s of (rec.outflow_streams || [])) {
+        if (s.is_active === false) continue;
+        const amt = Math.abs((s.average_amount && s.average_amount.amount) || (s.last_amount && s.last_amount.amount) || 0);
+        if (!amt) continue;
+        const yearly = /ANNUAL/i.test(s.frequency || "");
+        subs.push({ name: s.merchant_name || s.description || "Subscription", amount: amt, cadence: yearly ? "yr" : "mo" });
+      }
+    } catch (e) {}
+  }
+
+  // Spending: money out of account (positive amount in Plaid), excluding transfers.
+  const catMap = {};
+  let spent = 0;
+  for (const t of txns) {
+    const primary = (t.personal_finance_category && t.personal_finance_category.primary) || (t.category && t.category[0]) || "OTHER";
+    if (/TRANSFER|LOAN_PAYMENTS/i.test(primary)) continue;
+    if (!(t.amount > 0)) continue; // negatives are inflow/refunds
+    spent += t.amount;
+    const label = titleCase(primary);
+    catMap[label] = (catMap[label] || 0) + t.amount;
+  }
+  const spendingByCategory = Object.keys(catMap)
+    .map((category) => ({ category, amount: Math.round(catMap[category]) }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 6);
+
+  // De-dupe subscriptions by name (across items), keep the larger amount.
+  const subMap = {};
+  for (const s of subs) {
+    const k = s.name.toLowerCase();
+    if (!subMap[k] || s.amount > subMap[k].amount) subMap[k] = s;
+  }
+  const subscriptions = Object.values(subMap).sort((a, b) => b.amount - a.amount);
+
+  return {
+    updatedAt: ymd(now),
+    live: true,
+    syncing,
+    netWorth: Math.round(netWorth),
+    accounts: accounts.map((a) => ({ name: a.name, type: a.type, balance: Math.round(a.balance) })),
+    month: { label: monthLabel, budget: Number(budget) || 1800, spent: Math.round(spent) },
+    spendingByCategory,
+    subscriptions,
+  };
+}
 
 /* ---------- iCalendar parsing (for the Canvas feed) ---------- */
 function parseICS(text) {
