@@ -49,13 +49,13 @@
   },
   "school": { "status": "coming", "note": "Outlook email + Canvas assignments — next to wire up." },
   "music": {
-    "vibe": "Cinematic morning",
-    "note": "Tuned to your all-time Replay — film scores, indie-folk, Radiohead & city-pop.",
-    "picks": [
-      { "title": "Song on the Beach", "artist": "Arcade Fire & Owen Pallett", "note": "your all-time #1 (from Her)" },
-      { "title": "Northern Sky", "artist": "Nick Drake", "note": "folk sunrise" },
-      { "title": "Radio Rio", "artist": "Masayoshi Takanaka", "note": "city-pop sun" },
-      { "title": "Evergreen", "artist": "Richy Mitch & The Coal Miners", "note": "for the indie-folk lane" }
-    ]
+    "vibe": "Fresh finds",
+    "note": "New stuff to try, tuned to your taste — not your usual rotation.",
+    "songs": [
+      { "title": "anything", "artist": "Adrianne Lenker", "note": "for your Nick Drake / Alex G lane" },
+      { "title": "She's Leaving You", "artist": "MJ Lenderman", "note": "ragged indie rock, right up your alley" }
+    ],
+    "score": { "title": "Mystery of Love", "artist": "Sufjan Stevens", "note": "from Call Me by Your Name — Italian-summer tenderness, if you love Her + Luca" },
+    "album": { "title": "Stratosphere", "artist": "Duster", "note": "slowcore classic for the Dead Calm lane" }
   }
 }

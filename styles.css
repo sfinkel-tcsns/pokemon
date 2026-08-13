@@ -435,6 +435,8 @@ body {
   font-size: 13px; color: var(--text-dim);
 }
 .music-vibe { color: var(--text-dim); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.music-sub { font-size: 11.5px; font-weight: 650; color: var(--text-dim); margin: 12px 0 6px; }
+.music-sub:first-child { margin-top: 0; }
 .music-list { display: flex; flex-direction: column; gap: 6px; }
 .music-pick {
   display: flex; align-items: center; gap: 11px; text-decoration: none; color: inherit;

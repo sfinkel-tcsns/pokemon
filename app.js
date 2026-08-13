@@ -447,6 +447,17 @@ function ytDisconnect() {
 function loadDone() { try { return JSON.parse(localStorage.getItem("lifeos-done") || "{}"); } catch (e) { return {}; } }
 function saveDone(d) { localStorage.setItem("lifeos-done", JSON.stringify(d)); }
 
+// Keep the "Needs you" badge in sync with how many items are still un-done.
+function updateNeedCount() {
+  const el = document.getElementById("needCount");
+  const B = window.BRIEF_DATA;
+  if (!el || !B || !B.needsYou) return;
+  const done = loadDone();
+  const n = (B.needsYou.items || []).filter((i) => !done[i.url || i.title]).length;
+  el.textContent = n;
+  el.style.display = n ? "" : "none";
+}
+
 // A checkable to-do row (used by "Needs you" and "School"). Tapping the box
 // crosses it out; the done state persists in localStorage.
 function needRow(o) {
@@ -470,16 +481,26 @@ function renderMorning() {
   const canSchool = !!(window.LifeOSSession && LifeOSSession.enabled() && LifeOSSession.hasSession() && LifeOSSession.getCanvas);
 
   const music = B.music || {};
-  const musicHtml = (music.picks && music.picks.length)
-    ? `<div class="music-list">` + music.picks.map((p) => {
-        const q = encodeURIComponent(p.title + " " + p.artist);
-        return `<a class="music-pick" href="https://music.apple.com/us/search?term=${q}" target="_blank" rel="noopener">
-          <span class="music-play">▶</span>
-          <span class="music-meta"><span class="music-title">${escapeHtml(p.title)}</span><span class="music-artist">${escapeHtml(p.artist)}${p.note ? " · " + escapeHtml(p.note) : ""}</span></span>
-          <span class="music-open">Apple Music ↗</span>
-        </a>`;
-      }).join("") + `</div>` + (music.note ? `<div class="music-note">${escapeHtml(music.note)}</div>` : "")
-    : `<div class="soon-card">🎧 ${escapeHtml(music.note || "Apple Music — coming.")}</div>`;
+  const mpick = (p) => {
+    const q = encodeURIComponent(p.title + " " + p.artist);
+    return `<a class="music-pick" href="https://music.apple.com/us/search?term=${q}" target="_blank" rel="noopener">
+      <span class="music-play">▶</span>
+      <span class="music-meta"><span class="music-title">${escapeHtml(p.title)}</span><span class="music-artist">${escapeHtml(p.artist)}${p.note ? " · " + escapeHtml(p.note) : ""}</span></span>
+      <span class="music-open">Apple Music ↗</span>
+    </a>`;
+  };
+  let musicHtml;
+  if (music.songs || music.score || music.album) {
+    const parts = [];
+    if (music.songs && music.songs.length) parts.push(`<div class="music-sub">New songs to try</div><div class="music-list">${music.songs.map(mpick).join("")}</div>`);
+    if (music.score) parts.push(`<div class="music-sub">Score to try 🎬</div><div class="music-list">${mpick(music.score)}</div>`);
+    if (music.album) parts.push(`<div class="music-sub">Album to try 💿</div><div class="music-list">${mpick(music.album)}</div>`);
+    musicHtml = parts.join("") + (music.note ? `<div class="music-note">${escapeHtml(music.note)}</div>` : "");
+  } else if (music.picks && music.picks.length) {
+    musicHtml = `<div class="music-list">${music.picks.map(mpick).join("")}</div>` + (music.note ? `<div class="music-note">${escapeHtml(music.note)}</div>` : "");
+  } else {
+    musicHtml = `<div class="soon-card">🎧 ${escapeHtml(music.note || "Apple Music — coming.")}</div>`;
+  }
 
   const forYou = (B.forYou || []).map((f) => `
     <div class="fy-card">
@@ -493,6 +514,7 @@ function renderMorning() {
   const needs = (ny.items || []).map((i) => needRow({
     key: i.url || i.title, url: i.url, title: i.title, why: i.why, from: i.from,
   })).join("");
+  const undoneNeeds = (ny.items || []).filter((i) => !loadDone()[i.url || i.title]).length;
 
   view.innerHTML = `
     <div class="brief">
@@ -512,14 +534,14 @@ function renderMorning() {
           <div class="fy-grid">${forYou}</div>
         </div>
         <div class="brief-side">
-          <div class="sec-label">Needs you ${ny.count ? `<span class="need-count">${ny.count}</span>` : ""}</div>
+          <div class="sec-label">Needs you <span class="need-count" id="needCount"${undoneNeeds ? "" : ' style="display:none"'}>${undoneNeeds}</span></div>
           ${ny.count ? `<div class="needs">${needs}</div>` : `<div class="soon-card">Inbox clear — nothing needs you ✨</div>`}
           ${ny.filtered ? `<div class="need-filtered">${ny.filtered} newsletters &amp; receipts filtered out</div>` : ""}
           <div class="sec-label">School ${canSchool ? '<span class="live-dot"></span>' : ""}</div>
           ${canSchool
             ? `<div id="schoolCard" class="soon-card">Loading assignments…</div>`
             : `<div class="soon-card">📚 ${escapeHtml((B.school && B.school.note) || "Outlook + Canvas — coming next.")}</div>`}
-          <div class="sec-label">Soundtrack ${music.vibe ? `· <span class="music-vibe">${escapeHtml(music.vibe)}</span>` : ""}</div>
+          <div class="sec-label">Music to try ${music.vibe ? `· <span class="music-vibe">${escapeHtml(music.vibe)}</span>` : ""}</div>
           ${musicHtml}
         </div>
       </div>
@@ -683,6 +705,7 @@ function boot() {
     const on = !!d[key];
     row.classList.toggle("done", on);
     btn.setAttribute("aria-checked", on ? "true" : "false");
+    updateNeedCount();
   });
 
   loadData(window.CALENDAR_DATA || { events: [] });   // start from snapshot
