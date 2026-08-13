@@ -27,6 +27,12 @@ const SCOPES = [
   "https://www.googleapis.com/auth/youtube.readonly",
 ].join(" ");
 
+// Some Canvas/Instructure hosts 403 requests that don't look like a browser.
+const CANVAS_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+  "Accept": "text/calendar, text/plain, */*",
+};
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -97,7 +103,7 @@ export default {
       const scheme = feed.slice(0, Math.max(0, feed.indexOf(":")));
       let feedOk = false, status = 0, upcoming = 0, err = null;
       try {
-        const r = await fetch(feed);
+        const r = await fetch(feed, { headers: CANVAS_HEADERS });
         status = r.status; feedOk = r.ok;
         if (r.ok) { const t = await r.text(); upcoming = parseICS(t).filter((e) => e.start && e.start.getTime() > Date.now() - 12 * 3600 * 1000).length; }
       } catch (e) { err = String((e && e.message) || e); }
@@ -115,7 +121,7 @@ export default {
 
       const feed = env.CANVAS_ICS_URL;
       if (!feed) return cors(json({ error: "Canvas not configured" }, 400), site);
-      const text = await fetch(feed).then((r) => (r.ok ? r.text() : null));
+      const text = await fetch(feed, { headers: CANVAS_HEADERS }).then((r) => (r.ok ? r.text() : null));
       if (!text) return cors(json({ error: "Canvas feed error" }, 502), site);
 
       const now = Date.now();
