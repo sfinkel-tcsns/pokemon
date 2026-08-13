@@ -473,6 +473,28 @@ function needRow(o) {
     </div>`;
 }
 
+function daysUntil(dateStr) {
+  const a = new Date(todayKey() + "T00:00:00Z");
+  const b = new Date(String(dateStr) + "T00:00:00Z");
+  return Math.round((b - a) / 86400000);
+}
+function watchRow(w) {
+  let when = w.when || "";
+  if (w.date) {
+    const d = daysUntil(w.date);
+    when = d === 0 ? "today" : d === 1 ? "tomorrow" : d > 1 ? "in " + d + " days" : shortDate(w.date);
+  }
+  const soon = w.date != null && daysUntil(w.date) >= 0 && daysUntil(w.date) <= 7;
+  return `
+    <a class="watch-item" href="${escapeHtml(w.url || "#")}" target="_blank" rel="noopener">
+      <div class="watch-main">
+        <div class="watch-title">${escapeHtml(w.title)}</div>
+        ${w.note ? `<div class="watch-note">${escapeHtml(w.note)}</div>` : ""}
+      </div>
+      <div class="watch-when ${soon ? "soon" : ""}">${escapeHtml(when)}</div>
+    </a>`;
+}
+
 function renderMorning() {
   const B = window.BRIEF_DATA;
   document.getElementById("stats").innerHTML = "";
@@ -541,6 +563,7 @@ function renderMorning() {
           ${canSchool
             ? `<div id="schoolCard" class="soon-card">Loading assignments…</div>`
             : `<div class="soon-card">📚 ${escapeHtml((B.school && B.school.note) || "Outlook + Canvas — coming next.")}</div>`}
+          ${(B.watch && B.watch.length) ? `<div class="sec-label">Keep an eye on 👀</div><div class="watch-list">${B.watch.map(watchRow).join("")}</div>` : ""}
           <div class="sec-label">Music to try ${music.vibe ? `· <span class="music-vibe">${escapeHtml(music.vibe)}</span>` : ""}</div>
           ${musicHtml}
         </div>
