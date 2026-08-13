@@ -559,5 +559,16 @@ function boot() {
       if (live) applyLiveYT(live);
     }).catch(() => {});
   }
+
+  // Re-connect automatically when returning to the tab, if a session is remembered.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    if (window.LifeOSGoogle && LifeOSGoogle.isConfigured() && !STATE.live) {
+      LifeOSGoogle.tryResume().then((data) => { if (data) { loadData(data); renderConn("live"); } }).catch(() => {});
+    }
+    if (window.LifeOSYouTube && LifeOSYouTube.isConfigured() && !(YT_DATA && YT_DATA.live)) {
+      LifeOSYouTube.tryResume().then((live) => { if (live) applyLiveYT(live); }).catch(() => {});
+    }
+  });
 }
 boot();
