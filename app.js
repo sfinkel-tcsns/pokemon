@@ -245,6 +245,8 @@ function renderLegend() {
 }
 
 /* ---------- YouTube view ---------- */
+let YT_DATA = window.YOUTUBE_DATA;   // swapped for live data on Connect
+
 function fmtNum(n) {
   n = +n || 0;
   if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
@@ -252,7 +254,7 @@ function fmtNum(n) {
   return String(n);
 }
 function renderYouTube() {
-  const YT = window.YOUTUBE_DATA;
+  const YT = YT_DATA;
   const stats = document.getElementById("stats");
   const view = document.getElementById("view");
   if (!YT) { stats.innerHTML = ""; view.innerHTML = `<div class="empty">No YouTube data yet.</div>`; return; }
@@ -274,6 +276,17 @@ function renderYouTube() {
 
   const sheetBtn = YT.sheetUrl
     ? `<a class="sheet-btn" href="${escapeHtml(YT.sheetUrl)}" target="_blank" rel="noopener">📄 Open ideas sheet</a>` : "";
+
+  const configured = window.LifeOSYouTube && LifeOSYouTube.isConfigured();
+  const statusHtml = YT.live
+    ? `<span class="yt-status live">● live · ${YT.syncedAt ? new Date(YT.syncedAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "now"}</span>`
+    : `<span class="yt-status">Updated ${YT.updatedAt ? new Date(YT.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"} · snapshot</span>`;
+  let connControls = "";
+  if (configured && YT.live) {
+    connControls = `<button class="conn-btn ghost sm" id="ytRefresh">↻ Refresh</button><button class="conn-btn ghost sm" id="ytDisc">Disconnect</button>`;
+  } else if (configured) {
+    connControls = `<button class="conn-btn primary sm" id="ytConnect">Connect YouTube (live)</button>`;
+  }
 
   const traffic = (YT.traffic || []).map((t) => `
     <div class="traffic-row">
@@ -336,9 +349,10 @@ function renderYouTube() {
 
   view.innerHTML = `
     <div class="yt-toolbar">
-      <div class="yt-updated">Updated ${YT.updatedAt ? new Date(YT.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}</div>
+      <div class="yt-toolbar-left">${statusHtml}${connControls}</div>
       ${sheetBtn}
     </div>
+    <div class="conn-err" id="ytErr"></div>
     ${YT.insight ? `<div class="insight">💡 ${escapeHtml(YT.insight)}</div>` : ""}
     ${audienceHtml}
     <div class="yt-grid">
@@ -361,6 +375,39 @@ function renderYouTube() {
         </div>
       </div>
     </div>`;
+
+  const byId = (id) => document.getElementById(id);
+  if (byId("ytConnect")) byId("ytConnect").addEventListener("click", ytConnect);
+  if (byId("ytRefresh")) byId("ytRefresh").addEventListener("click", ytRefresh);
+  if (byId("ytDisc")) byId("ytDisc").addEventListener("click", ytDisconnect);
+}
+
+async function ytConnect() {
+  const btn = document.getElementById("ytConnect");
+  if (btn) { btn.textContent = "Connecting…"; btn.disabled = true; }
+  try {
+    const live = await LifeOSYouTube.fetchAll();
+    YT_DATA = Object.assign({}, window.YOUTUBE_DATA, {
+      channel: live.channel, analytics: live.analytics, traffic: live.traffic,
+      audience: live.audience, topRecent: live.topRecent,
+      live: true, syncedAt: live.syncedAt,
+    });
+    renderYouTube();
+  } catch (e) {
+    const el = document.getElementById("ytErr");
+    if (el) el.textContent = e.message;
+    if (btn) { btn.textContent = "Connect YouTube (live)"; btn.disabled = false; }
+  }
+}
+async function ytRefresh() {
+  const btn = document.getElementById("ytRefresh");
+  if (btn) { btn.textContent = "Refreshing…"; btn.disabled = true; }
+  try { await ytConnect(); } catch (e) {}
+}
+function ytDisconnect() {
+  try { LifeOSYouTube.disconnect(); } catch (e) {}
+  YT_DATA = window.YOUTUBE_DATA;
+  renderYouTube();
 }
 
 /* ---------- view switching ---------- */

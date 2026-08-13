@@ -269,8 +269,13 @@ body {
 .up-date { font-size: 13px; font-weight: 600; color: var(--text-dim); margin-bottom: 8px; position: sticky; top: 0; }
 
 /* ---------- YouTube view ---------- */
-.yt-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-.yt-updated { font-size: 12.5px; color: var(--text-faint); }
+.yt-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.yt-toolbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.yt-status { font-size: 12.5px; color: var(--text-faint); }
+.yt-status.live { color: var(--c-health); font-weight: 600; }
+.conn-btn.sm { width: auto; padding: 6px 12px; font-size: 12.5px; }
+#ytErr:empty { display: none; }
+#ytErr { margin: -6px 0 14px; }
 .sheet-btn {
   display: inline-flex; align-items: center; gap: 7px;
   background: var(--c-health); color: #06281f; text-decoration: none;
