@@ -89,6 +89,21 @@ export default {
       return cors(json({ access_token: tok.access_token, expires_in: tok.expires_in }), site);
     }
 
+    // 3b) Canvas diagnostic — visit in a browser to see what's wrong.
+    //     Reveals the URL scheme + fetch status WITHOUT exposing the feed URL.
+    if (url.pathname === "/canvas/status") {
+      const feed = env.CANVAS_ICS_URL;
+      if (!feed) return json({ configured: false });
+      const scheme = feed.slice(0, Math.max(0, feed.indexOf(":")));
+      let feedOk = false, status = 0, upcoming = 0, err = null;
+      try {
+        const r = await fetch(feed);
+        status = r.status; feedOk = r.ok;
+        if (r.ok) { const t = await r.text(); upcoming = parseICS(t).filter((e) => e.start && e.start.getTime() > Date.now() - 12 * 3600 * 1000).length; }
+      } catch (e) { err = String((e && e.message) || e); }
+      return json({ configured: true, scheme, feedOk, status, upcoming, err });
+    }
+
     // 4) Canvas homework (optional) — reads your personal Canvas Calendar Feed
     //    (.ics), which needs NO admin token. Gated behind a valid Life OS session.
     //    Needs env var: CANVAS_ICS_URL
