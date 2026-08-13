@@ -449,6 +449,7 @@ function renderMorning() {
   document.getElementById("stats").innerHTML = "";
   const view = document.getElementById("view");
   if (!B) { view.innerHTML = `<div class="empty">No brief yet — ask Claude to run your morning brief.</div>`; return; }
+  const canSchool = !!(window.LifeOSSession && LifeOSSession.enabled() && LifeOSSession.hasSession() && LifeOSSession.getCanvas);
 
   const forYou = (B.forYou || []).map((f) => `
     <div class="fy-card">
@@ -487,13 +488,37 @@ function renderMorning() {
           <div class="sec-label">Needs you ${ny.count ? `<span class="need-count">${ny.count}</span>` : ""}</div>
           ${ny.count ? `<div class="needs">${needs}</div>` : `<div class="soon-card">Inbox clear — nothing needs you ✨</div>`}
           ${ny.filtered ? `<div class="need-filtered">${ny.filtered} newsletters &amp; receipts filtered out</div>` : ""}
-          <div class="sec-label">School</div>
-          <div class="soon-card">📚 ${escapeHtml((B.school && B.school.note) || "Outlook + Canvas — coming next.")}</div>
+          <div class="sec-label">School ${canSchool ? '<span class="live-dot"></span>' : ""}</div>
+          ${canSchool
+            ? `<div id="schoolCard" class="soon-card">Loading assignments…</div>`
+            : `<div class="soon-card">📚 ${escapeHtml((B.school && B.school.note) || "Outlook + Canvas — coming next.")}</div>`}
           <div class="sec-label">Soundtrack</div>
           <div class="soon-card">🎧 ${escapeHtml((B.music && B.music.note) || "Apple Music — coming.")}</div>
         </div>
       </div>
     </div>`;
+
+  if (canSchool) fillSchool();
+}
+
+function fmtDue(iso) {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return day + " · " + time;
+}
+async function fillSchool() {
+  const el = document.getElementById("schoolCard");
+  if (!el || !window.LifeOSSession || !LifeOSSession.getCanvas) return;
+  const a = await LifeOSSession.getCanvas();
+  if (a == null) { el.textContent = "Canvas not connected yet."; return; }
+  if (!a.length) { el.outerHTML = `<div class="soon-card">✅ No assignments due — you're clear.</div>`; return; }
+  el.outerHTML = `<div class="needs">` + a.map((x) => `
+    <a class="need-item school" href="${escapeHtml(x.url)}" target="_blank" rel="noopener">
+      <div class="need-title">${escapeHtml(x.title)}${x.missing ? ' <span class="miss">missing</span>' : ""}</div>
+      <div class="need-why">${escapeHtml(x.course)}</div>
+      <div class="need-from">due ${escapeHtml(fmtDue(x.dueAt))} ↗</div>
+    </a>`).join("") + `</div>`;
 }
 
 /* ---------- view switching ---------- */

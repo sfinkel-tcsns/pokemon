@@ -89,6 +89,41 @@ export default {
       return cors(json({ access_token: tok.access_token, expires_in: tok.expires_in }), site);
     }
 
+    // 4) Canvas homework (optional) — proxied so the token stays server-side
+    //    and CORS works. Gated behind a valid Life OS session.
+    //    Needs env vars: CANVAS_BASE_URL, CANVAS_TOKEN
+    if (url.pathname === "/canvas" && request.method === "POST") {
+      let session;
+      try { session = (await request.json()).session; } catch (e) {}
+      if (!session) return cors(json({ error: "no session" }, 400), site);
+      try { await decrypt(session, env.ENC_SECRET); } catch (e) { return cors(json({ error: "unauthorized" }, 401), site); }
+
+      const base = String(env.CANVAS_BASE_URL || "").replace(/\/+$/, "");
+      if (!base || !env.CANVAS_TOKEN) return cors(json({ error: "Canvas not configured" }, 400), site);
+
+      const today = new Date().toISOString().slice(0, 10);
+      const r = await fetch(base + "/api/v1/planner/items?start_date=" + today + "&per_page=50",
+        { headers: { Authorization: "Bearer " + env.CANVAS_TOKEN } });
+      if (!r.ok) return cors(json({ error: "Canvas API " + r.status }, 502), site);
+
+      const items = await r.json();
+      const assignments = (Array.isArray(items) ? items : [])
+        .filter((it) => ["assignment", "quiz", "discussion_topic"].includes(it.plannable_type))
+        .map((it) => ({ it, due: (it.plannable && it.plannable.due_at) || it.plannable_date }))
+        .filter((x) => x.due && !(x.it.submissions && (x.it.submissions.submitted || x.it.submissions.graded || x.it.submissions.excused)))
+        .map((x) => ({
+          title: (x.it.plannable && x.it.plannable.title) || x.it.plannable_type,
+          course: x.it.context_name || "",
+          dueAt: x.due,
+          url: x.it.html_url ? (x.it.html_url.startsWith("http") ? x.it.html_url : base + x.it.html_url) : base,
+          type: x.it.plannable_type,
+          missing: !!(x.it.submissions && x.it.submissions.missing),
+        }))
+        .sort((a, b) => String(a.dueAt).localeCompare(String(b.dueAt)))
+        .slice(0, 12);
+      return cors(json({ assignments }), site);
+    }
+
     return new Response("Life OS auth backend is running.", { status: 200 });
   },
 };

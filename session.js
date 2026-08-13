@@ -72,5 +72,20 @@ window.LifeOSSession = (function () {
 
   function disconnect() { clear(); }
 
-  return { enabled, hasSession, connect, getToken, disconnect };
+  // Canvas assignments (via the Worker proxy). Returns [] or null if unavailable.
+  async function getCanvas() {
+    if (!enabled() || !hasSession()) return null;
+    try {
+      const r = await fetch(base() + "/canvas", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ session: localStorage.getItem(KEY) }),
+      });
+      if (!r.ok) return null;
+      const j = await r.json();
+      return j.assignments || [];
+    } catch (e) { return null; }
+  }
+
+  return { enabled, hasSession, connect, getToken, disconnect, getCanvas };
 })();

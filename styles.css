@@ -421,6 +421,10 @@ body {
   border-radius: var(--radius-sm); padding: 12px 14px;
   font-size: 13px; color: var(--text-dim);
 }
+.need-item.school { border-left-color: var(--c-work); }
+.need-item.school:hover { border-color: var(--c-work); }
+.miss { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #fff; background: var(--c-social); padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c-health); box-shadow: 0 0 7px var(--c-health); display: inline-block; }
 
 @media (max-width: 900px) {
   .brief-grid { grid-template-columns: 1fr; }
