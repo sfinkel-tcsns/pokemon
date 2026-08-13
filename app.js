@@ -475,7 +475,7 @@ function renderMorning() {
         const q = encodeURIComponent(p.title + " " + p.artist);
         return `<a class="music-pick" href="https://music.apple.com/us/search?term=${q}" target="_blank" rel="noopener">
           <span class="music-play">▶</span>
-          <span class="music-meta"><span class="music-title">${escapeHtml(p.title)}</span><span class="music-artist">${escapeHtml(p.artist)}</span></span>
+          <span class="music-meta"><span class="music-title">${escapeHtml(p.title)}</span><span class="music-artist">${escapeHtml(p.artist)}${p.note ? " · " + escapeHtml(p.note) : ""}</span></span>
           <span class="music-open">Apple Music ↗</span>
         </a>`;
       }).join("") + `</div>` + (music.note ? `<div class="music-note">${escapeHtml(music.note)}</div>` : "")

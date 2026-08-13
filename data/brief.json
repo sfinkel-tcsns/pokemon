@@ -49,12 +49,13 @@
   },
   "school": { "status": "coming", "note": "Outlook email + Canvas assignments — next to wire up." },
   "music": {
-    "vibe": "Morning momentum",
-    "note": "Starter picks — tell Claude your go-to artists and these tailor to you.",
+    "vibe": "Indie morning",
+    "note": "Tuned to your Replay — Dead Calm, Arcade Fire, C418, Alex G, Grateful Dead.",
     "picks": [
-      { "title": "Can't Hold Us", "artist": "Macklemore & Ryan Lewis" },
-      { "title": "Levitating", "artist": "Dua Lipa" },
-      { "title": "Sunflower", "artist": "Post Malone & Swae Lee" }
+      { "title": "Wake Up", "artist": "Arcade Fire", "note": "morning anthem, your #2" },
+      { "title": "Runner", "artist": "Alex G" },
+      { "title": "Sweden", "artist": "C418", "note": "your #3 artist" },
+      { "title": "Inside Out", "artist": "Duster", "note": "for the Dead Calm slowcore lane" }
     ]
   }
 }
