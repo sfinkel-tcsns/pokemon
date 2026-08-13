@@ -263,10 +263,10 @@ function renderYouTube() {
   const pillarColor = (p) => (YT.pillars && YT.pillars[p]) || "var(--c-personal)";
 
   stats.innerHTML = [
-    { label: "Subscribers", value: fmtNum(YT.channel.subscribers), sub: YT.channel.title },
+    { label: "Subscribers", value: fmtNum(YT.channel.subscribers), sub: a.subsGained ? "+" + fmtNum(a.subsGained) + " · " + (a.period || "") : YT.channel.title },
     { label: "Views", value: fmtNum(a.views), sub: a.period || "" },
+    { label: "CTR", value: a.ctr != null ? a.ctr + "%" : "—", sub: a.impressions ? fmtNum(a.impressions) + " impressions" : "from Studio", accent: true },
     { label: "Watch time", value: fmtNum(a.watchHours) + " hrs", sub: a.period || "" },
-    { label: "Subs gained", value: "+" + (a.subsGained || 0).toLocaleString(), sub: a.period || "", accent: true },
   ].map((c) => `
     <div class="stat">
       <div class="stat-label">${c.label}</div>
@@ -337,6 +337,12 @@ function renderYouTube() {
       <span class="fmt-label">${escapeHtml(f.label)}</span>
       <span class="fmt-nums">${f.viewsPct}% views · <b>${f.watchPct}% watch</b></span>
     </div>`).join("");
+  const deviceCard = (aud.device || []).map((d) => `
+    <div class="traffic-row">
+      <span class="traffic-label">${escapeHtml(d.label)}</span>
+      <span class="bar"><span class="bar-fill" style="width:${Math.round(d.pct / ((aud.device[0] || {}).pct || 100) * 100)}%"></span></span>
+      <span class="traffic-pct">${d.pct}%</span>
+    </div>`).join("");
 
   const audienceHtml = aud.age ? `
     <div class="yt-section-title">Who's watching · ${escapeHtml((YT.analytics || {}).period || "recent")}</div>
@@ -344,8 +350,12 @@ function renderYouTube() {
       <div class="aud-card"><div class="aud-h">Age</div>${ageCard}</div>
       <div class="aud-card"><div class="aud-h">Gender</div>${genderCard}</div>
       <div class="aud-card"><div class="aud-h">Top countries</div>${geoCard}</div>
+      ${aud.device && aud.device.length ? `<div class="aud-card"><div class="aud-h">Device</div>${deviceCard}</div>` : ""}
       <div class="aud-card"><div class="aud-h">Format</div>${formatCard}</div>
     </div>` : "";
+
+  const factsHtml = (YT.facts && YT.facts.length)
+    ? `<div class="yt-facts">${YT.facts.map((f) => `<span class="fact">${escapeHtml(f)}</span>`).join("")}</div>` : "";
 
   view.innerHTML = `
     <div class="yt-toolbar">
@@ -353,6 +363,7 @@ function renderYouTube() {
       ${sheetBtn}
     </div>
     <div class="conn-err" id="ytErr"></div>
+    ${factsHtml}
     ${YT.insight ? `<div class="insight">💡 ${escapeHtml(YT.insight)}</div>` : ""}
     ${audienceHtml}
     <div class="yt-grid">
@@ -387,9 +398,19 @@ async function ytConnect() {
   if (btn) { btn.textContent = "Connecting…"; btn.disabled = true; }
   try {
     const live = await LifeOSYouTube.fetchAll();
-    YT_DATA = Object.assign({}, window.YOUTUBE_DATA, {
-      channel: live.channel, analytics: live.analytics, traffic: live.traffic,
-      audience: live.audience, topRecent: live.topRecent,
+    const snap = window.YOUTUBE_DATA || {};
+    // overlay live numbers but keep Studio-only fields (CTR, impressions, revenue,
+    // facts, device split) that the API can't provide
+    const mergedAudience = Object.assign({}, snap.audience, {
+      gender: live.audience.gender, age: live.audience.age, geography: live.audience.geography,
+    });
+    if (live.audience.format && live.audience.format.length) mergedAudience.format = live.audience.format;
+    YT_DATA = Object.assign({}, snap, {
+      channel: live.channel,
+      analytics: Object.assign({}, snap.analytics, live.analytics),
+      traffic: live.traffic,
+      audience: mergedAudience,
+      topRecent: live.topRecent,
       live: true, syncedAt: live.syncedAt,
     });
     renderYouTube();
