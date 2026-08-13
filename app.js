@@ -393,27 +393,30 @@ function renderYouTube() {
   if (byId("ytDisc")) byId("ytDisc").addEventListener("click", ytDisconnect);
 }
 
+// overlay live API numbers but keep Studio-only fields (CTR, impressions,
+// revenue, facts, device split) the API can't provide, then re-render.
+function applyLiveYT(live) {
+  const snap = window.YOUTUBE_DATA || {};
+  const mergedAudience = Object.assign({}, snap.audience, {
+    gender: live.audience.gender, age: live.audience.age, geography: live.audience.geography,
+  });
+  if (live.audience.format && live.audience.format.length) mergedAudience.format = live.audience.format;
+  YT_DATA = Object.assign({}, snap, {
+    channel: live.channel,
+    analytics: Object.assign({}, snap.analytics, live.analytics),
+    traffic: live.traffic,
+    audience: mergedAudience,
+    topRecent: live.topRecent,
+    live: true, syncedAt: live.syncedAt,
+  });
+  if (CURRENT === "youtube") renderYouTube();
+}
+
 async function ytConnect() {
   const btn = document.getElementById("ytConnect");
   if (btn) { btn.textContent = "Connecting…"; btn.disabled = true; }
   try {
-    const live = await LifeOSYouTube.fetchAll();
-    const snap = window.YOUTUBE_DATA || {};
-    // overlay live numbers but keep Studio-only fields (CTR, impressions, revenue,
-    // facts, device split) that the API can't provide
-    const mergedAudience = Object.assign({}, snap.audience, {
-      gender: live.audience.gender, age: live.audience.age, geography: live.audience.geography,
-    });
-    if (live.audience.format && live.audience.format.length) mergedAudience.format = live.audience.format;
-    YT_DATA = Object.assign({}, snap, {
-      channel: live.channel,
-      analytics: Object.assign({}, snap.analytics, live.analytics),
-      traffic: live.traffic,
-      audience: mergedAudience,
-      topRecent: live.topRecent,
-      live: true, syncedAt: live.syncedAt,
-    });
-    renderYouTube();
+    applyLiveYT(await LifeOSYouTube.fetchAll());
   } catch (e) {
     const el = document.getElementById("ytErr");
     if (el) el.textContent = e.message;
@@ -544,5 +547,17 @@ function boot() {
 
   loadData(window.CALENDAR_DATA || { events: [] });   // start from snapshot
   renderConn("snapshot");
+
+  // Reuse a remembered session so refreshes don't require reconnecting.
+  if (window.LifeOSGoogle && LifeOSGoogle.isConfigured()) {
+    LifeOSGoogle.tryResume().then((data) => {
+      if (data) { loadData(data); renderConn("live"); }
+    }).catch(() => {});
+  }
+  if (window.LifeOSYouTube && LifeOSYouTube.isConfigured()) {
+    LifeOSYouTube.tryResume().then((live) => {
+      if (live) applyLiveYT(live);
+    }).catch(() => {});
+  }
 }
 boot();

@@ -11,10 +11,31 @@ window.LifeOSGoogle = (function () {
 
   let tokenClient = null;
   let accessToken = null;
+  let tokenExp = 0;
+
+  const TOKEN_KEY = "lifeos-cal-token";
+  const REMEMBER_KEY = "lifeos-cal-remember";
 
   function isConfigured() {
     return !!(CFG.googleClientId && CFG.googleClientId.trim());
   }
+
+  function cacheToken() {
+    try {
+      localStorage.setItem(TOKEN_KEY, JSON.stringify({ t: accessToken, e: tokenExp }));
+      localStorage.setItem(REMEMBER_KEY, "1");
+    } catch (e) {}
+  }
+  function loadCache() {
+    try {
+      const c = JSON.parse(localStorage.getItem(TOKEN_KEY) || "null");
+      if (c && c.t) { accessToken = c.t; tokenExp = c.e || 0; }
+    } catch (e) {}
+  }
+  function clearCache() {
+    try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(REMEMBER_KEY); } catch (e) {}
+  }
+  function tokenValid() { return accessToken && Date.now() < tokenExp; }
 
   // Wait for the async-loaded Google Identity Services library.
   function gisReady() {
@@ -47,23 +68,36 @@ window.LifeOSGoogle = (function () {
     }
   }
 
-  function requestToken() {
+  function requestToken(silent) {
     return new Promise((resolve, reject) => {
       tokenClient.callback = (resp) => {
         if (resp && resp.error) return reject(new Error(resp.error_description || resp.error));
         accessToken = resp.access_token;
+        tokenExp = Date.now() + ((+resp.expires_in || 3600) - 60) * 1000;
+        cacheToken();
         resolve(accessToken);
       };
       try {
-        tokenClient.requestAccessToken({ prompt: accessToken ? "" : "consent" });
+        tokenClient.requestAccessToken({ prompt: silent ? "" : (accessToken ? "" : "consent") });
       } catch (e) { reject(e); }
     });
   }
 
   async function getToken(force) {
     await ensureClient();
-    if (accessToken && !force) return accessToken;
-    return requestToken();
+    if (!force && tokenValid()) return accessToken;
+    if (!force) { loadCache(); if (tokenValid()) return accessToken; }
+    return requestToken(false);
+  }
+
+  // Reuse a stored session on page load — no click if a valid token is cached,
+  // and a silent re-auth attempt if it expired. Never forces the consent popup.
+  async function tryResume() {
+    if (localStorage.getItem(REMEMBER_KEY) !== "1") return null;
+    try { await ensureClient(); } catch (e) { return null; }
+    loadCache();
+    if (tokenValid()) { try { return await fetchAll(); } catch (e) { accessToken = null; } }
+    try { await requestToken(true); return await fetchAll(); } catch (e) { return null; }
   }
 
   async function apiGet(url, retry) {
@@ -135,8 +169,9 @@ window.LifeOSGoogle = (function () {
     if (accessToken && window.google && google.accounts && google.accounts.oauth2) {
       try { google.accounts.oauth2.revoke(accessToken); } catch (e) {}
     }
-    accessToken = null;
+    accessToken = null; tokenExp = 0;
+    clearCache();
   }
 
-  return { isConfigured, fetchAll, disconnect };
+  return { isConfigured, fetchAll, disconnect, tryResume };
 })();

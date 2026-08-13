@@ -16,8 +16,29 @@ window.LifeOSYouTube = (function () {
 
   let tokenClient = null;
   let accessToken = null;
+  let tokenExp = 0;
+
+  const TOKEN_KEY = "lifeos-yt-token";
+  const REMEMBER_KEY = "lifeos-yt-remember";
 
   function isConfigured() { return !!(CFG.googleClientId && CFG.googleClientId.trim()); }
+
+  function cacheToken() {
+    try {
+      localStorage.setItem(TOKEN_KEY, JSON.stringify({ t: accessToken, e: tokenExp }));
+      localStorage.setItem(REMEMBER_KEY, "1");
+    } catch (e) {}
+  }
+  function loadCache() {
+    try {
+      const c = JSON.parse(localStorage.getItem(TOKEN_KEY) || "null");
+      if (c && c.t) { accessToken = c.t; tokenExp = c.e || 0; }
+    } catch (e) {}
+  }
+  function clearCache() {
+    try { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(REMEMBER_KEY); } catch (e) {}
+  }
+  function tokenValid() { return accessToken && Date.now() < tokenExp; }
 
   function gisReady() {
     return new Promise((resolve, reject) => {
@@ -38,20 +59,34 @@ window.LifeOSYouTube = (function () {
       });
     }
   }
-  function requestToken() {
+  function requestToken(silent) {
     return new Promise((resolve, reject) => {
       tokenClient.callback = (r) => {
         if (r && r.error) return reject(new Error(r.error_description || r.error));
-        accessToken = r.access_token; resolve(accessToken);
+        accessToken = r.access_token;
+        tokenExp = Date.now() + ((+r.expires_in || 3600) - 60) * 1000;
+        cacheToken();
+        resolve(accessToken);
       };
-      try { tokenClient.requestAccessToken({ prompt: accessToken ? "" : "consent" }); }
+      try { tokenClient.requestAccessToken({ prompt: silent ? "" : (accessToken ? "" : "consent") }); }
       catch (e) { reject(e); }
     });
   }
   async function getToken(force) {
     await ensureClient();
-    if (accessToken && !force) return accessToken;
-    return requestToken();
+    if (!force && tokenValid()) return accessToken;
+    if (!force) { loadCache(); if (tokenValid()) return accessToken; }
+    return requestToken(false);
+  }
+
+  // Reuse a stored session on load — no click if a valid token is cached,
+  // silent re-auth if it expired. Never forces the consent popup.
+  async function tryResume() {
+    if (localStorage.getItem(REMEMBER_KEY) !== "1") return null;
+    try { await ensureClient(); } catch (e) { return null; }
+    loadCache();
+    if (tokenValid()) { try { return await fetchAll(); } catch (e) { accessToken = null; } }
+    try { await requestToken(true); return await fetchAll(); } catch (e) { return null; }
   }
   async function apiGet(url, retry) {
     const token = await getToken(false);
@@ -194,8 +229,9 @@ window.LifeOSYouTube = (function () {
     if (accessToken && window.google && google.accounts && google.accounts.oauth2) {
       try { google.accounts.oauth2.revoke(accessToken); } catch (e) {}
     }
-    accessToken = null;
+    accessToken = null; tokenExp = 0;
+    clearCache();
   }
 
-  return { isConfigured, fetchAll, disconnect };
+  return { isConfigured, fetchAll, disconnect, tryResume };
 })();
