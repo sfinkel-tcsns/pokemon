@@ -478,12 +478,21 @@ function daysUntil(dateStr) {
   const b = new Date(String(dateStr) + "T00:00:00Z");
   return Math.round((b - a) / 86400000);
 }
-function watchRow(w) {
-  let when = w.when || "";
+function whenLabel(w) {
   if (w.date) {
     const d = daysUntil(w.date);
-    when = d === 0 ? "today" : d === 1 ? "tomorrow" : d > 1 ? "in " + d + " days" : shortDate(w.date);
+    return d === 0 ? "today" : d === 1 ? "tomorrow" : d > 1 ? "in " + d + " days" : shortDate(w.date);
   }
+  return w.when || "";
+}
+// True for near-term, actionable items → they belong in "Do now" tasks.
+function isNow(w) {
+  if (w.now != null) return !!w.now;
+  if (w.date != null) { const d = daysUntil(w.date); return d >= 0 && d <= 7; }
+  return false;
+}
+function watchRow(w) {
+  const when = whenLabel(w);
   const soon = w.date != null && daysUntil(w.date) >= 0 && daysUntil(w.date) <= 7;
   return `
     <a class="watch-item" href="${escapeHtml(w.url || "#")}" target="_blank" rel="noopener">
@@ -493,6 +502,20 @@ function watchRow(w) {
       </div>
       <div class="watch-when ${soon ? "soon" : ""}">${escapeHtml(when)}</div>
     </a>`;
+}
+// A near-term "Do now" task — checkable, crosses out and persists like a to-do.
+function taskRow(w) {
+  const key = w.url || w.title;
+  const done = !!loadDone()[key];
+  const when = whenLabel(w);
+  return `
+    <div class="need-item task ${done ? "done" : ""}" data-key="${escapeHtml(key)}">
+      <button class="need-check" aria-checked="${done}" aria-label="Mark done" title="Mark done"></button>
+      <a class="need-body" href="${escapeHtml(w.url || "#")}" target="_blank" rel="noopener">
+        <div class="need-title">${escapeHtml(w.title)}${when ? ` <span class="task-when">${escapeHtml(when)}</span>` : ""}</div>
+        ${w.note ? `<div class="need-why">${escapeHtml(w.note)}</div>` : ""}
+      </a>
+    </div>`;
 }
 
 function renderMorning() {
@@ -538,6 +561,10 @@ function renderMorning() {
   })).join("");
   const undoneNeeds = (ny.items || []).filter((i) => !loadDone()[i.url || i.title]).length;
 
+  const watchAll = B.watch || [];
+  const doNow = watchAll.filter(isNow);
+  const keepEye = watchAll.filter((w) => !isNow(w));
+
   view.innerHTML = `
     <div class="brief">
       <div class="quote-card">
@@ -559,11 +586,12 @@ function renderMorning() {
           <div class="sec-label">Needs you <span class="need-count" id="needCount"${undoneNeeds ? "" : ' style="display:none"'}>${undoneNeeds}</span></div>
           ${ny.count ? `<div class="needs">${needs}</div>` : `<div class="soon-card">Inbox clear — nothing needs you ✨</div>`}
           ${ny.filtered ? `<div class="need-filtered">${ny.filtered} newsletters &amp; receipts filtered out</div>` : ""}
+          ${doNow.length ? `<div class="sec-label">Do now ✅</div><div class="needs">${doNow.map(taskRow).join("")}</div>` : ""}
           <div class="sec-label">School ${canSchool ? '<span class="live-dot"></span>' : ""}</div>
           ${canSchool
             ? `<div id="schoolCard" class="soon-card">Loading assignments…</div>`
             : `<div class="soon-card">📚 ${escapeHtml((B.school && B.school.note) || "Outlook + Canvas — coming next.")}</div>`}
-          ${(B.watch && B.watch.length) ? `<div class="sec-label">Keep an eye on 👀</div><div class="watch-list">${B.watch.map(watchRow).join("")}</div>` : ""}
+          ${keepEye.length ? `<div class="sec-label">Keep an eye on 👀</div><div class="watch-list">${keepEye.map(watchRow).join("")}</div>` : ""}
           <div class="sec-label">Music to try ${music.vibe ? `· <span class="music-vibe">${escapeHtml(music.vibe)}</span>` : ""}</div>
           ${musicHtml}
         </div>

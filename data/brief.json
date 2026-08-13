@@ -50,8 +50,8 @@
   "school": { "status": "coming", "note": "Outlook email + Canvas assignments — next to wire up." },
   "watch": [
     { "title": "🌅 Miracle Morning — Day 30", "date": "2026-08-18", "note": "Your streak milestone. Reread the Aug 9 journal — you wrote it while it still felt hard.", "url": "https://www.google.com/calendar/event?eid=cDEwcnRrbDJ0aWZvaDk0dHQ4dmhjazRxdWcgdGhlc2ltb25maW5rZWxAbQ" },
-    { "title": "Birthright Excel — submit the Notify Me form", "when": "now · 60 sec", "note": "birthrightisraelexcel.com. Apps open Sept 1, close Oct 1. Resume draft is already built.", "url": "https://www.birthrightisraelexcel.com" },
-    { "title": "Register for Birthright (Jan 2027 trip)", "when": "this week", "note": "Winter registration is open; popular dates fill. January won't collide with an Excel summer.", "url": "https://www.birthrightisrael.com/find-a-trip" },
+    { "title": "Birthright Excel — submit the Notify Me form", "now": true, "when": "now · 60 sec", "note": "birthrightisraelexcel.com. Apps open Sept 1, close Oct 1. Resume draft is already built.", "url": "https://www.birthrightisraelexcel.com" },
+    { "title": "Register for Birthright (Jan 2027 trip)", "now": true, "when": "this week", "note": "Winter registration is open; popular dates fill. January won't collide with an Excel summer.", "url": "https://www.birthrightisrael.com/find-a-trip" },
     { "title": "Birthright Excel — submit the application", "date": "2026-09-25", "note": "Hard deadline Oct 1, 8:59pm CA. Confirm 3.2 GPA first; lead with Clickster as a business, not film.", "url": "https://www.google.com/calendar/event?eid=MXUxcWk4aDFxa2FnZ284cWFkbDYwMXJ1Z2cgdGhlc2ltb25maW5rZWxAbQ" }
   ],
   "music": {
