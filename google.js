@@ -84,6 +84,10 @@ window.LifeOSGoogle = (function () {
   }
 
   async function getToken(force) {
+    // Permanent-login backend takes over when configured + connected.
+    if (window.LifeOSSession && LifeOSSession.enabled() && LifeOSSession.hasSession()) {
+      return LifeOSSession.getToken(force);
+    }
     await ensureClient();
     if (!force && tokenValid()) return accessToken;
     if (!force) { loadCache(); if (tokenValid()) return accessToken; }

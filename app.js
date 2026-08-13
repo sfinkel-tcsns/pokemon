@@ -416,7 +416,11 @@ async function ytConnect() {
   const btn = document.getElementById("ytConnect");
   if (btn) { btn.textContent = "Connecting…"; btn.disabled = true; }
   try {
+    if (window.LifeOSSession && LifeOSSession.enabled() && !LifeOSSession.hasSession()) {
+      await LifeOSSession.connect();   // one backend login covers Calendar + YouTube
+    }
     applyLiveYT(await LifeOSYouTube.fetchAll());
+    if (backendActive()) refreshCalendar().catch(() => {});
   } catch (e) {
     const el = document.getElementById("ytErr");
     if (el) el.textContent = e.message;
@@ -430,8 +434,13 @@ async function ytRefresh() {
 }
 function ytDisconnect() {
   try { LifeOSYouTube.disconnect(); } catch (e) {}
+  try { if (window.LifeOSSession && LifeOSSession.enabled()) LifeOSSession.disconnect(); } catch (e) {}
   YT_DATA = window.YOUTUBE_DATA;
   renderYouTube();
+  if (window.LifeOSSession && LifeOSSession.enabled() && !LifeOSSession.hasSession()) {
+    loadData(window.CALENDAR_DATA || { events: [] });   // backend logout covers Calendar too
+    renderConn("snapshot");
+  }
 }
 
 /* ---------- view switching ---------- */
@@ -502,12 +511,18 @@ function renderConn(mode, msg) {
   document.getElementById("connectBtn").addEventListener("click", goConnect);
 }
 
+function backendActive() { return window.LifeOSSession && LifeOSSession.enabled() && LifeOSSession.hasSession(); }
+function refreshCalendar() { return LifeOSGoogle.fetchAll().then((d) => { loadData(d); renderConn("live"); }); }
+function refreshYouTube() { return LifeOSYouTube.fetchAll().then(applyLiveYT); }
+
 async function goConnect() {
   renderConn("connecting");
   try {
-    const data = await LifeOSGoogle.fetchAll();
-    loadData(data);                 // rebuilds + re-renders as live
-    renderConn("live");
+    if (window.LifeOSSession && LifeOSSession.enabled() && !LifeOSSession.hasSession()) {
+      await LifeOSSession.connect();   // one backend login covers Calendar + YouTube
+    }
+    await refreshCalendar();
+    if (backendActive() && window.LifeOSYouTube) refreshYouTube().catch(() => {});
   } catch (e) {
     setSync("snapshot", window.CALENDAR_DATA && window.CALENDAR_DATA.syncedAt);
     renderConn("error", e.message);
@@ -526,8 +541,11 @@ async function goRefresh() {
 }
 function goDisconnect() {
   try { LifeOSGoogle.disconnect(); } catch (e) {}
+  try { if (window.LifeOSSession && LifeOSSession.enabled()) LifeOSSession.disconnect(); } catch (e) {}
   loadData(window.CALENDAR_DATA || { events: [] });   // back to snapshot
   renderConn("snapshot");
+  YT_DATA = window.YOUTUBE_DATA;                       // backend logout covers YouTube too
+  if (CURRENT === "youtube") renderYouTube();
 }
 
 /* ---------- boot ---------- */
@@ -549,20 +567,27 @@ function boot() {
   renderConn("snapshot");
 
   // Reuse a remembered session so refreshes don't require reconnecting.
-  if (window.LifeOSGoogle && LifeOSGoogle.isConfigured()) {
-    LifeOSGoogle.tryResume().then((data) => {
-      if (data) { loadData(data); renderConn("live"); }
-    }).catch(() => {});
-  }
-  if (window.LifeOSYouTube && LifeOSYouTube.isConfigured()) {
-    LifeOSYouTube.tryResume().then((live) => {
-      if (live) applyLiveYT(live);
-    }).catch(() => {});
+  if (backendActive()) {
+    // Permanent backend login — one session, no popups, ever.
+    refreshCalendar().catch(() => {});
+    if (window.LifeOSYouTube) refreshYouTube().catch(() => {});
+  } else {
+    if (window.LifeOSGoogle && LifeOSGoogle.isConfigured()) {
+      LifeOSGoogle.tryResume().then((data) => { if (data) { loadData(data); renderConn("live"); } }).catch(() => {});
+    }
+    if (window.LifeOSYouTube && LifeOSYouTube.isConfigured()) {
+      LifeOSYouTube.tryResume().then((live) => { if (live) applyLiveYT(live); }).catch(() => {});
+    }
   }
 
-  // Re-connect automatically when returning to the tab, if a session is remembered.
+  // Re-connect automatically when returning to the tab.
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "visible") return;
+    if (backendActive()) {
+      if (!STATE.live) refreshCalendar().catch(() => {});
+      if (!(YT_DATA && YT_DATA.live)) refreshYouTube().catch(() => {});
+      return;
+    }
     if (window.LifeOSGoogle && LifeOSGoogle.isConfigured() && !STATE.live) {
       LifeOSGoogle.tryResume().then((data) => { if (data) { loadData(data); renderConn("live"); } }).catch(() => {});
     }

@@ -17,4 +17,9 @@ window.LIFEOS_CONFIG = {
 
   // 4) Your timezone (used to place events on the right day).
   timeZone: "America/Chicago",
+
+  // 5) Permanent login (optional). Paste your auth Worker URL here to stay
+  //    logged in forever on the device (see BACKEND-SETUP.md). Leave empty to
+  //    use the in-browser login instead.
+  backendUrl: "",
 };
