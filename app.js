@@ -444,6 +444,24 @@ function ytDisconnect() {
 }
 
 /* ---------- Morning brief view ---------- */
+function loadDone() { try { return JSON.parse(localStorage.getItem("lifeos-done") || "{}"); } catch (e) { return {}; } }
+function saveDone(d) { localStorage.setItem("lifeos-done", JSON.stringify(d)); }
+
+// A checkable to-do row (used by "Needs you" and "School"). Tapping the box
+// crosses it out; the done state persists in localStorage.
+function needRow(o) {
+  const done = !!loadDone()[o.key];
+  return `
+    <div class="need-item ${o.extraClass || ""} ${done ? "done" : ""}" data-key="${escapeHtml(o.key)}">
+      <button class="need-check" aria-checked="${done}" aria-label="Mark done" title="Mark done"></button>
+      <a class="need-body" href="${escapeHtml(o.url || "#")}" target="_blank" rel="noopener">
+        <div class="need-title">${o.titleHtml || escapeHtml(o.title)}</div>
+        ${o.why ? `<div class="need-why">${escapeHtml(o.why)}</div>` : ""}
+        ${o.from ? `<div class="need-from">${escapeHtml(o.from)} ↗</div>` : ""}
+      </a>
+    </div>`;
+}
+
 function renderMorning() {
   const B = window.BRIEF_DATA;
   document.getElementById("stats").innerHTML = "";
@@ -460,12 +478,9 @@ function renderMorning() {
     </div>`).join("");
 
   const ny = B.needsYou || { count: 0, items: [] };
-  const needs = (ny.items || []).map((i) => `
-    <a class="need-item" href="${escapeHtml(i.url || "#")}" target="_blank" rel="noopener">
-      <div class="need-title">${escapeHtml(i.title)}</div>
-      <div class="need-why">${escapeHtml(i.why)}</div>
-      <div class="need-from">${escapeHtml(i.from || "")} ↗</div>
-    </a>`).join("");
+  const needs = (ny.items || []).map((i) => needRow({
+    key: i.url || i.title, url: i.url, title: i.title, why: i.why, from: i.from,
+  })).join("");
 
   view.innerHTML = `
     <div class="brief">
@@ -513,12 +528,11 @@ async function fillSchool() {
   const a = await LifeOSSession.getCanvas();
   if (a == null) { el.textContent = "Canvas not connected yet."; return; }
   if (!a.length) { el.outerHTML = `<div class="soon-card">✅ No assignments due — you're clear.</div>`; return; }
-  el.outerHTML = `<div class="needs">` + a.map((x) => `
-    <a class="need-item school" href="${escapeHtml(x.url)}" target="_blank" rel="noopener">
-      <div class="need-title">${escapeHtml(x.title)}${x.missing ? ' <span class="miss">missing</span>' : ""}</div>
-      <div class="need-why">${escapeHtml(x.course)}</div>
-      <div class="need-from">due ${escapeHtml(fmtDue(x.dueAt))} ↗</div>
-    </a>`).join("") + `</div>`;
+  el.outerHTML = `<div class="needs">` + a.map((x) => needRow({
+    key: x.url || x.title, url: x.url, extraClass: "school",
+    titleHtml: escapeHtml(x.title) + (x.missing ? ' <span class="miss">missing</span>' : ""),
+    why: x.course, from: "due " + fmtDue(x.dueAt),
+  })).join("") + `</div>`;
 }
 
 /* ---------- view switching ---------- */
@@ -641,6 +655,22 @@ function boot() {
     const cur = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
     document.documentElement.setAttribute("data-theme", cur);
     localStorage.setItem("lifeos-theme", cur);
+  });
+
+  // Check off a "Needs you" / "School" item (persists across reloads).
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest && e.target.closest(".need-check");
+    if (!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    const row = btn.closest(".need-item");
+    if (!row) return;
+    const key = row.dataset.key;
+    const d = loadDone();
+    if (d[key]) delete d[key]; else d[key] = true;
+    saveDone(d);
+    const on = !!d[key];
+    row.classList.toggle("done", on);
+    btn.setAttribute("aria-checked", on ? "true" : "false");
   });
 
   loadData(window.CALENDAR_DATA || { events: [] });   // start from snapshot

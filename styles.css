@@ -405,12 +405,25 @@ body {
 }
 .needs { display: flex; flex-direction: column; gap: 8px; }
 .need-item {
-  display: block; text-decoration: none; color: inherit;
+  display: flex; align-items: flex-start; gap: 11px;
   background: var(--bg-elev); border: 1px solid var(--line);
   border-left: 3px solid var(--c-social); border-radius: var(--radius-sm);
-  padding: 12px 14px; transition: border-color 0.12s;
+  padding: 12px 14px; transition: border-color 0.12s, opacity 0.12s;
 }
 .need-item:hover { border-color: var(--c-social); }
+.need-body { flex: 1; min-width: 0; text-decoration: none; color: inherit; }
+.need-check {
+  flex: none; width: 19px; height: 19px; margin-top: 1px; padding: 0;
+  border: 1.5px solid var(--line); border-radius: 6px; background: transparent;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, border-color 0.12s;
+}
+.need-check::after { content: "✓"; font-size: 12px; font-weight: 800; line-height: 1; color: transparent; }
+.need-check:hover { border-color: var(--c-health); }
+.need-check[aria-checked="true"] { background: var(--c-health); border-color: var(--c-health); }
+.need-check[aria-checked="true"]::after { color: #06281f; }
+.need-item.done { opacity: 0.5; }
+.need-item.done .need-title { text-decoration: line-through; }
 .need-title { font-size: 14px; font-weight: 600; }
 .need-why { font-size: 12.5px; color: var(--text-dim); line-height: 1.45; margin-top: 4px; }
 .need-from { font-size: 11.5px; color: var(--text-faint); margin-top: 7px; }
