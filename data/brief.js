@@ -48,6 +48,14 @@ window.BRIEF_DATA = {
     ]
   },
   "school": { "status": "coming", "note": "Outlook email + Canvas assignments — next to wire up." },
-  "music": { "status": "apple-pending", "note": "Apple Music needs an Apple Developer account to connect (see note in chat)." }
+  "music": {
+    "vibe": "Morning momentum",
+    "note": "Starter picks — tell Claude your go-to artists and these tailor to you.",
+    "picks": [
+      { "title": "Can't Hold Us", "artist": "Macklemore & Ryan Lewis" },
+      { "title": "Levitating", "artist": "Dua Lipa" },
+      { "title": "Sunflower", "artist": "Post Malone & Swae Lee" }
+    ]
+  }
 }
 ;

@@ -469,6 +469,18 @@ function renderMorning() {
   if (!B) { view.innerHTML = `<div class="empty">No brief yet — ask Claude to run your morning brief.</div>`; return; }
   const canSchool = !!(window.LifeOSSession && LifeOSSession.enabled() && LifeOSSession.hasSession() && LifeOSSession.getCanvas);
 
+  const music = B.music || {};
+  const musicHtml = (music.picks && music.picks.length)
+    ? `<div class="music-list">` + music.picks.map((p) => {
+        const q = encodeURIComponent(p.title + " " + p.artist);
+        return `<a class="music-pick" href="https://music.apple.com/us/search?term=${q}" target="_blank" rel="noopener">
+          <span class="music-play">▶</span>
+          <span class="music-meta"><span class="music-title">${escapeHtml(p.title)}</span><span class="music-artist">${escapeHtml(p.artist)}</span></span>
+          <span class="music-open">Apple Music ↗</span>
+        </a>`;
+      }).join("") + `</div>` + (music.note ? `<div class="music-note">${escapeHtml(music.note)}</div>` : "")
+    : `<div class="soon-card">🎧 ${escapeHtml(music.note || "Apple Music — coming.")}</div>`;
+
   const forYou = (B.forYou || []).map((f) => `
     <div class="fy-card">
       <span class="fy-tag" style="background:${f.color}22;color:${f.color}">${escapeHtml(f.tag)}</span>
@@ -507,8 +519,8 @@ function renderMorning() {
           ${canSchool
             ? `<div id="schoolCard" class="soon-card">Loading assignments…</div>`
             : `<div class="soon-card">📚 ${escapeHtml((B.school && B.school.note) || "Outlook + Canvas — coming next.")}</div>`}
-          <div class="sec-label">Soundtrack</div>
-          <div class="soon-card">🎧 ${escapeHtml((B.music && B.music.note) || "Apple Music — coming.")}</div>
+          <div class="sec-label">Soundtrack ${music.vibe ? `· <span class="music-vibe">${escapeHtml(music.vibe)}</span>` : ""}</div>
+          ${musicHtml}
         </div>
       </div>
     </div>`;
