@@ -1,0 +1,25 @@
+window.MONEY_DATA = {
+  "updatedAt": "2026-08-13",
+  "sample": true,
+  "netWorth": 18420,
+  "accounts": [
+    { "name": "Schwab", "type": "Investments", "balance": 12800 },
+    { "name": "Chase", "type": "Checking", "balance": 3240 },
+    { "name": "Wise", "type": "Cash", "balance": 2380 }
+  ],
+  "month": { "label": "August", "budget": 1800, "spent": 1120 },
+  "spendingByCategory": [
+    { "category": "Food & Dining", "amount": 420 },
+    { "category": "Shopping", "amount": 260 },
+    { "category": "Transport", "amount": 180 },
+    { "category": "Subscriptions", "amount": 96 },
+    { "category": "Other", "amount": 164 }
+  ],
+  "subscriptions": [
+    { "name": "Adobe Creative Cloud", "amount": 22.99, "cadence": "mo" },
+    { "name": "Apple Music", "amount": 10.99, "cadence": "mo" },
+    { "name": "Rocket Money Premium", "amount": 6, "cadence": "mo" },
+    { "name": "iCloud+", "amount": 2.99, "cadence": "mo" }
+  ]
+}
+;

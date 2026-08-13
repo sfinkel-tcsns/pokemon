@@ -476,6 +476,26 @@ body {
   .brief-grid { grid-template-columns: 1fr; }
 }
 
+/* ---------- Money ---------- */
+.traffic.money .traffic-row { grid-template-columns: 150px 1fr 72px; }
+.acct-type { font-size: 10.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-left: 4px; }
+.acct-bal { flex: none; font-size: 12.5px; font-weight: 650; font-variant-numeric: tabular-nums; text-align: right; min-width: 64px; }
+.traffic-row .acct-bal { color: var(--text); }
+.budget { margin-bottom: 8px; }
+.budget-head { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+.budget-head span:first-child { font-weight: 650; }
+.budget-head span:last-child { color: var(--text-dim); }
+.budget-bar { height: 12px; background: var(--line-soft); border-radius: 8px; overflow: hidden; }
+.budget-fill { display: block; height: 100%; background: var(--c-health); border-radius: 8px; }
+.budget-fill.over { background: var(--c-social); }
+.subs { display: flex; flex-direction: column; gap: 2px; }
+.sub-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 2px; border-bottom: 1px solid var(--line-soft); }
+.sub-row:last-child { border-bottom: none; }
+.sub-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sub-amt { flex: none; font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.sub-cad { font-size: 11px; color: var(--text-faint); font-weight: 400; }
+.money-acct { }
+
 /* ---------- misc ---------- */
 .empty { color: var(--text-faint); font-size: 14px; padding: 40px; text-align: center; }
 

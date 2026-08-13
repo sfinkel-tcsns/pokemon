@@ -592,6 +592,80 @@ async function fillSchool() {
   })).join("") + `</div>`;
 }
 
+/* ---------- Money view ---------- */
+function fmtMoney(n, dec) {
+  dec = dec || 0;
+  return "$" + (Number(n) || 0).toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+function renderMoney() {
+  const M = window.MONEY_DATA;
+  const stats = document.getElementById("stats");
+  const view = document.getElementById("view");
+  if (!M) { stats.innerHTML = ""; view.innerHTML = `<div class="empty">No money data yet — send your Rocket Money screenshots.</div>`; return; }
+
+  const subsTotal = (M.subscriptions || []).reduce((s, x) => s + (x.cadence === "yr" ? x.amount / 12 : x.amount), 0);
+  const budgetLeft = (M.month ? M.month.budget - M.month.spent : 0);
+
+  stats.innerHTML = [
+    { label: "Net worth", value: fmtMoney(M.netWorth), sub: "across your accounts", accent: true },
+    { label: "Spent · " + (M.month ? M.month.label : "month"), value: fmtMoney(M.month ? M.month.spent : 0), sub: "of " + fmtMoney(M.month ? M.month.budget : 0) + " budget" },
+    { label: "Budget left", value: fmtMoney(budgetLeft), sub: budgetLeft >= 0 ? "on track" : "over budget" },
+    { label: "Subscriptions", value: fmtMoney(subsTotal) + "/mo", sub: (M.subscriptions || []).length + " active" },
+  ].map((c) => `
+    <div class="stat">
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value ${c.accent ? "accent" : ""}">${c.value}</div>
+      <div class="stat-sub">${escapeHtml(c.sub)}</div>
+    </div>`).join("");
+
+  const maxBal = Math.max(1, ...(M.accounts || []).map((a) => a.balance));
+  const accounts = (M.accounts || []).map((a) => `
+    <div class="traffic-row">
+      <span class="traffic-label">${escapeHtml(a.name)} <span class="acct-type">${escapeHtml(a.type || "")}</span></span>
+      <span class="bar"><span class="bar-fill" style="width:${Math.round(a.balance / maxBal * 100)}%"></span></span>
+      <span class="acct-bal">${fmtMoney(a.balance)}</span>
+    </div>`).join("");
+
+  const pct = M.month && M.month.budget ? Math.min(100, Math.round(M.month.spent / M.month.budget * 100)) : 0;
+  const over = M.month && M.month.spent > M.month.budget;
+  const budget = M.month ? `
+    <div class="budget">
+      <div class="budget-head"><span>${fmtMoney(M.month.spent)} spent</span><span>${fmtMoney(M.month.budget)} budget</span></div>
+      <div class="budget-bar"><span class="budget-fill ${over ? "over" : ""}" style="width:${pct}%"></span></div>
+    </div>` : "";
+
+  const maxCat = Math.max(1, ...(M.spendingByCategory || []).map((c) => c.amount));
+  const cats = (M.spendingByCategory || []).map((c) => `
+    <div class="traffic-row">
+      <span class="traffic-label">${escapeHtml(c.category)}</span>
+      <span class="bar"><span class="bar-fill" style="width:${Math.round(c.amount / maxCat * 100)}%"></span></span>
+      <span class="acct-bal">${fmtMoney(c.amount)}</span>
+    </div>`).join("");
+
+  const subs = (M.subscriptions || []).slice().sort((a, b) => b.amount - a.amount).map((s) => `
+    <div class="sub-row">
+      <span class="sub-name">${escapeHtml(s.name)}</span>
+      <span class="sub-amt">${fmtMoney(s.amount, s.amount % 1 ? 2 : 0)}<span class="sub-cad">/${escapeHtml(s.cadence || "mo")}</span></span>
+    </div>`).join("");
+
+  view.innerHTML = `
+    ${M.sample ? `<div class="insight">💡 Sample data — send your Rocket Money screenshots (net worth, subscriptions, spending, budget) and I'll drop in your real numbers.</div>` : ""}
+    <div class="yt-grid">
+      <div class="yt-col">
+        <div class="yt-section-title">This month · ${escapeHtml(M.month ? M.month.label : "")}</div>
+        ${budget}
+        <div class="yt-section-title">Spending by category</div>
+        <div class="traffic money">${cats}</div>
+      </div>
+      <div class="yt-side">
+        <div class="yt-section-title">Net worth</div>
+        <div class="traffic money">${accounts}</div>
+        <div class="yt-section-title">Subscriptions · ${fmtMoney(subsTotal)}/mo</div>
+        <div class="subs">${subs}</div>
+      </div>
+    </div>`;
+}
+
 /* ---------- view switching ---------- */
 let CURRENT = "morning";
 const MORNING_TITLE = "Good morning" + (window.BRIEF_DATA && window.BRIEF_DATA.greetingName ? ", " + window.BRIEF_DATA.greetingName : "");
@@ -601,6 +675,7 @@ const VIEWS = {
   week:     { title: "This Week", sub: () => "7-day overview", render: renderWeek },
   upcoming: { title: "Upcoming",  sub: () => `${STATE.events.filter((e) => e.key >= STATE.today).length || STATE.events.length} events ahead`, render: renderUpcoming },
   youtube:  { title: "YouTube",   sub: () => (window.YOUTUBE_DATA ? window.YOUTUBE_DATA.channel.title + " · analytics + daily ideas" : ""), render: renderYouTube },
+  money:    { title: "Money",     sub: () => (window.MONEY_DATA ? "Net worth · budget · subscriptions" : ""), render: renderMoney },
 };
 function render() {
   const v = VIEWS[CURRENT];
@@ -609,8 +684,9 @@ function render() {
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.classList.toggle("active", b.dataset.view === CURRENT));
 
-  if (CURRENT === "morning" || CURRENT === "youtube") {
+  if (CURRENT === "morning" || CURRENT === "youtube" || CURRENT === "money") {
     document.getElementById("legend").innerHTML = "";
+    if (CURRENT === "money") document.getElementById("stats").innerHTML = "";
     v.render();
     return;
   }
