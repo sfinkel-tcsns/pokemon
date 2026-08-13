@@ -244,12 +244,132 @@ function renderLegend() {
     .join("");
 }
 
+/* ---------- YouTube view ---------- */
+function fmtNum(n) {
+  n = +n || 0;
+  if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
+  if (n >= 1e3) return Math.round(n / 1e3) + "K";
+  return String(n);
+}
+function renderYouTube() {
+  const YT = window.YOUTUBE_DATA;
+  const stats = document.getElementById("stats");
+  const view = document.getElementById("view");
+  if (!YT) { stats.innerHTML = ""; view.innerHTML = `<div class="empty">No YouTube data yet.</div>`; return; }
+
+  const a = YT.analytics || {};
+  const pillarColor = (p) => (YT.pillars && YT.pillars[p]) || "var(--c-personal)";
+
+  stats.innerHTML = [
+    { label: "Subscribers", value: fmtNum(YT.channel.subscribers), sub: YT.channel.title },
+    { label: "Views", value: fmtNum(a.views), sub: a.period || "" },
+    { label: "Watch time", value: fmtNum(a.watchHours) + " hrs", sub: a.period || "" },
+    { label: "Subs gained", value: "+" + (a.subsGained || 0).toLocaleString(), sub: a.period || "", accent: true },
+  ].map((c) => `
+    <div class="stat">
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value ${c.accent ? "accent" : ""}">${c.value}</div>
+      <div class="stat-sub">${escapeHtml(c.sub)}</div>
+    </div>`).join("");
+
+  const sheetBtn = YT.sheetUrl
+    ? `<a class="sheet-btn" href="${escapeHtml(YT.sheetUrl)}" target="_blank" rel="noopener">📄 Open ideas sheet</a>` : "";
+
+  const traffic = (YT.traffic || []).map((t) => `
+    <div class="traffic-row">
+      <span class="traffic-label">${escapeHtml(t.label)}</span>
+      <span class="bar"><span class="bar-fill" style="width:${t.pct}%"></span></span>
+      <span class="traffic-pct">${t.pct}%</span>
+    </div>`).join("");
+
+  const ideaCard = (it) => `
+    <div class="idea">
+      <span class="pill" style="background:${pillarColor(it.pillar)}22;color:${pillarColor(it.pillar)}">${escapeHtml(it.pillar)}</span>
+      <div class="idea-title">${escapeHtml(it.title)}</div>
+      <div class="idea-hook">${escapeHtml(it.hook)}</div>
+      <div class="idea-basis">↳ ${escapeHtml(it.basis)}</div>
+    </div>`;
+
+  const pipeRow = (p) => `
+    <div class="pipe-row">
+      <span class="pipe-day">${escapeHtml(p.day)}</span>
+      <span class="pipe-dot" style="background:${pillarColor(p.pillar)}"></span>
+      <span class="pipe-title">${escapeHtml(p.title)}</span>
+      <span class="status-badge status-${p.status.toLowerCase()}">${escapeHtml(p.status)}</span>
+    </div>`;
+
+  // ----- audience section -----
+  const aud = YT.audience || {};
+  const maxAge = Math.max(1, ...(aud.age || []).map((a) => a.pct));
+  const ageCard = (aud.age || []).map((a) => `
+    <div class="traffic-row">
+      <span class="traffic-label">${escapeHtml(a.group)}</span>
+      <span class="bar"><span class="bar-fill" style="width:${Math.round(a.pct / maxAge * 100)}%"></span></span>
+      <span class="traffic-pct">${a.pct}%</span>
+    </div>`).join("");
+  const genderCard = (aud.gender || []).map((g) => `
+    <div class="traffic-row">
+      <span class="traffic-label">${escapeHtml(g.label)}</span>
+      <span class="bar"><span class="bar-fill" style="width:${g.pct}%"></span></span>
+      <span class="traffic-pct">${g.pct}%</span>
+    </div>`).join("");
+  const geoCard = (aud.geography || []).map((c) => `
+    <div class="traffic-row">
+      <span class="traffic-label">${escapeHtml(c.country)}</span>
+      <span class="bar"><span class="bar-fill" style="width:${Math.round(c.pct / (aud.geography[0].pct || 100) * 100)}%"></span></span>
+      <span class="traffic-pct">${c.pct}%</span>
+    </div>`).join("");
+  const formatCard = (aud.format || []).map((f) => `
+    <div class="fmt-row">
+      <span class="fmt-label">${escapeHtml(f.label)}</span>
+      <span class="fmt-nums">${f.viewsPct}% views · <b>${f.watchPct}% watch</b></span>
+    </div>`).join("");
+
+  const audienceHtml = aud.age ? `
+    <div class="yt-section-title">Who's watching · ${escapeHtml((YT.analytics || {}).period || "recent")}</div>
+    <div class="aud-grid">
+      <div class="aud-card"><div class="aud-h">Age</div>${ageCard}</div>
+      <div class="aud-card"><div class="aud-h">Gender</div>${genderCard}</div>
+      <div class="aud-card"><div class="aud-h">Top countries</div>${geoCard}</div>
+      <div class="aud-card"><div class="aud-h">Format</div>${formatCard}</div>
+    </div>` : "";
+
+  view.innerHTML = `
+    <div class="yt-toolbar">
+      <div class="yt-updated">Updated ${YT.updatedAt ? new Date(YT.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}</div>
+      ${sheetBtn}
+    </div>
+    ${YT.insight ? `<div class="insight">💡 ${escapeHtml(YT.insight)}</div>` : ""}
+    ${audienceHtml}
+    <div class="yt-grid">
+      <div class="yt-col">
+        <div class="yt-section-title">Today's ideas</div>
+        <div class="ideas-grid">${(YT.today || []).map(ideaCard).join("")}</div>
+        <div class="yt-section-title">This week's pipeline</div>
+        <div class="pipe">${(YT.pipeline || []).map(pipeRow).join("")}</div>
+      </div>
+      <div class="yt-side">
+        <div class="yt-section-title">Traffic sources</div>
+        <div class="traffic">${traffic}</div>
+        <div class="yt-section-title">Top videos · ${escapeHtml(a.period || "recent")}</div>
+        <div class="topvids">
+          ${(YT.topRecent || []).map((v) => `
+            <div class="topvid">
+              <span class="topvid-title">${escapeHtml(v.title)}</span>
+              <span class="topvid-views">${fmtNum(v.views)}</span>
+            </div>`).join("")}
+        </div>
+      </div>
+    </div>`;
+}
+
 /* ---------- view switching ---------- */
 let CURRENT = "today";
 const VIEWS = {
   today:    { title: "Today",     sub: () => prettyDate(STATE.anchor) + (STATE.anchor !== STATE.today ? " (next day with events)" : ""), render: renderToday },
   week:     { title: "This Week", sub: () => "7-day overview", render: renderWeek },
   upcoming: { title: "Upcoming",  sub: () => `${STATE.events.filter((e) => e.key >= STATE.today).length || STATE.events.length} events ahead`, render: renderUpcoming },
+  youtube:  { title: "YouTube",   sub: () => (window.YOUTUBE_DATA ? window.YOUTUBE_DATA.channel.title + " · analytics + daily ideas" : ""), render: renderYouTube },
 };
 function render() {
   const v = VIEWS[CURRENT];
@@ -257,6 +377,13 @@ function render() {
   document.getElementById("viewSub").textContent = v.sub();
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.classList.toggle("active", b.dataset.view === CURRENT));
+
+  if (CURRENT === "youtube") {
+    document.getElementById("legend").innerHTML = "";
+    renderYouTube();
+    return;
+  }
+  renderLegend();
   renderStats();
   v.render();
 }
