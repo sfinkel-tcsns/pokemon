@@ -1092,34 +1092,54 @@ function renderSchool() {
   if (canSchool) loadCanvasInto("schoolHW");
 }
 
-/* ---------- Tasks view (unified hub) ---------- */
+/* ---------- Tasks view (unified hub — everything actionable, from every tab) ---------- */
 function renderTasks() {
   const stats = document.getElementById("stats");
   const view = document.getElementById("view");
   stats.innerHTML = "";
-  const dm = loadDismissed();
+  const dm = loadDismissed(), done = loadDone();
+  const live = (k) => !dm[k];
   const B = window.BRIEF_DATA || {};
+  const S = SCHOOL_LIVE || window.SCHOOL_DATA || {};
+
   const userTasks = loadUserTasks();
-  const needs = ((B.needsYou && B.needsYou.items) || []).filter((i) => !dm[i.url || i.title]);
-  const now = (B.watch || []).filter((w) => isNow(w) && !dm[w.url || w.title]);
-  const school = (B.schoolEmail || []).filter((i) => !dm[i.url || i.title]);
+  const needs  = ((B.needsYou && B.needsYou.items) || []).filter((i) => live(i.url || i.title));
+  const now    = (B.watch || []).filter((w) => isNow(w) && live(w.url || w.title));
+  const keep   = (B.watch || []).filter((w) => !isNow(w) && live(w.url || w.title));
+  const flags  = (S.flags || []).filter((f) => live(f.url || f.title));
+  const emails = (B.schoolEmail || []).filter((i) => live(i.url || i.title));
   const canSchool = !!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.getCanvas);
 
   const sec = (label, html) => html ? `<div class="sec-label">${label}</div><div class="needs">${html}</div>` : "";
-  const openCount = userTasks.filter((t) => !loadDone()[t.id]).length
-    + needs.filter((i) => !loadDone()[i.url || i.title]).length
-    + now.filter((w) => !loadDone()[w.url || w.title]).length
-    + school.filter((i) => !loadDone()[i.url || i.title]).length;
+  const rows = {
+    user:   userTasks.map((t) => needRow({ key: t.id, title: t.title, user: true })).join(""),
+    needs:  needs.map((i) => needRow({ key: i.url || i.title, url: i.url, title: i.title, why: i.why, from: i.from })).join(""),
+    now:    now.map(taskRow).join(""),
+    flags:  flags.map((f) => needRow({ key: f.url || f.title, url: f.url, extraClass: "school", title: f.title, why: f.why, when: f.urgency === "now" ? "now" : (f.urgency || "") })).join(""),
+    emails: emails.map((i) => needRow({ key: i.url || i.title, url: i.url, extraClass: "school", title: i.title, why: i.why, from: i.from || "Outlook · Chapman" })).join(""),
+    keep:   keep.map((w) => needRow({ key: w.url || w.title, url: w.url, title: w.title, why: w.note, when: whenLabel(w) })).join(""),
+  };
+  const allKeys = [].concat(
+    userTasks.map((t) => t.id),
+    needs.map((i) => i.url || i.title),
+    now.map((w) => w.url || w.title),
+    flags.map((f) => f.url || f.title),
+    emails.map((i) => i.url || i.title),
+    keep.map((w) => w.url || w.title),
+  );
+  const openCount = allKeys.filter((k) => !done[k]).length;
 
   view.innerHTML = `
     <div class="tasks-wrap">
       <div class="tasks-count">${openCount} open ${openCount === 1 ? "task" : "tasks"}</div>
       ${taskAddBox("Add a task…", true)}
-      ${sec("My tasks", userTasks.map((t) => needRow({ key: t.id, title: t.title, user: true })).join("")) || `<div class="sec-label">My tasks</div><div class="soon-card">Nothing yet — add one above.</div>`}
-      ${sec("Needs you", needs.map((i) => needRow({ key: i.url || i.title, url: i.url, title: i.title, why: i.why, from: i.from })).join(""))}
-      ${sec("Do now", now.map(taskRow).join(""))}
-      ${sec("School", school.map((i) => needRow({ key: i.url || i.title, url: i.url, extraClass: "school", title: i.title, why: i.why, from: i.from || "Outlook · Chapman" })).join(""))}
+      ${rows.user ? sec("My tasks", rows.user) : `<div class="sec-label">My tasks</div><div class="soon-card">Nothing yet — add one above.</div>`}
+      ${sec("Needs you · Gmail", rows.needs)}
+      ${sec("Do now", rows.now)}
+      ${sec("School · to-dos", rows.flags)}
+      ${sec("Emails to respond · school", rows.emails)}
       ${canSchool ? `<div class="sec-label">Homework <span class="live-dot"></span></div><div id="tasksHW" class="soon-card">Loading assignments…</div>` : ""}
+      ${sec("Keep an eye on", rows.keep)}
     </div>`;
 
   if (canSchool) loadCanvasInto("tasksHW");
