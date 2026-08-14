@@ -195,6 +195,19 @@ body {
 .stat-sub { font-size: 12.5px; color: var(--text-dim); margin-top: 2px; }
 .stat-value.accent { color: var(--accent); }
 
+/* ---------- Calendar segmented toggle ---------- */
+.cal-seg {
+  display: inline-flex; gap: 3px; padding: 3px; margin-bottom: 20px;
+  background: var(--bg-elev); border: 1px solid var(--line); border-radius: 11px;
+}
+.cal-seg-btn {
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  padding: 7px 16px; border: none; border-radius: 8px; background: transparent; color: var(--text-dim);
+  transition: background .12s, color .12s;
+}
+.cal-seg-btn:hover { color: var(--text); }
+.cal-seg-btn.active { background: var(--accent); color: #fff; }
+
 /* ---------- Today timeline ---------- */
 .timeline { display: flex; flex-direction: column; gap: 2px; position: relative; }
 .tl-now {

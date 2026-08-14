@@ -166,8 +166,10 @@ function hoursLabel(mins) {
 function truncate(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + "…" : s; }
 
 /* ---------- views ---------- */
+// Calendar sub-views render into #calBody (inside the Calendar tab) when present.
+function calBodyEl() { return document.getElementById("calBody") || document.getElementById("view"); }
 function renderToday() {
-  const view = document.getElementById("view");
+  const view = calBodyEl();
   const list = STATE.byDay[STATE.anchor] || [];
   if (!list.length) { view.innerHTML = `<div class="empty">No events for this day.</div>`; return; }
 
@@ -192,7 +194,7 @@ function renderToday() {
 }
 
 function renderWeek() {
-  const view = document.getElementById("view");
+  const view = calBodyEl();
   const [y, mo, d] = STATE.anchor.split("-").map(Number);
   const base = new Date(Date.UTC(y, mo - 1, d));
   base.setUTCDate(base.getUTCDate() - ((base.getUTCDay() + 6) % 7)); // Monday
@@ -226,7 +228,7 @@ function renderWeek() {
 }
 
 function renderUpcoming() {
-  const view = document.getElementById("view");
+  const view = calBodyEl();
   const keys = STATE.dayKeys.filter((k) => k >= STATE.today);
   const use = keys.length ? keys : STATE.dayKeys;
   if (!use.length) { view.innerHTML = `<div class="empty">No upcoming events.</div>`; return; }
@@ -1145,14 +1147,26 @@ function renderTasks() {
   if (canSchool) loadCanvasInto("tasksHW");
 }
 
+/* ---------- Calendar (Today / Week / Upcoming under one tab) ---------- */
+let CAL_MODE = "today";
+const CAL_MODES = [["today", "Today"], ["week", "Week"], ["upcoming", "Upcoming"]];
+function renderCalendar() {
+  const view = document.getElementById("view");
+  view.innerHTML = `<div class="cal-seg">${CAL_MODES.map(([m, l]) => `<button class="cal-seg-btn ${CAL_MODE === m ? "active" : ""}" data-cal="${m}">${l}</button>`).join("")}</div><div id="calBody"></div>`;
+  ({ today: renderToday, week: renderWeek, upcoming: renderUpcoming }[CAL_MODE] || renderToday)();
+}
+function calSub() {
+  if (CAL_MODE === "today") return prettyDate(STATE.anchor) + (STATE.anchor !== STATE.today ? " (next day with events)" : "");
+  if (CAL_MODE === "week") return "7-day overview";
+  return `${STATE.events.filter((e) => e.key >= STATE.today).length || STATE.events.length} events ahead`;
+}
+
 /* ---------- view switching ---------- */
 let CURRENT = "morning";
 const MORNING_TITLE = "Good morning" + (window.BRIEF_DATA && window.BRIEF_DATA.greetingName ? ", " + window.BRIEF_DATA.greetingName : "");
 const VIEWS = {
   morning:  { title: MORNING_TITLE, sub: () => (window.BRIEF_DATA ? new Date(window.BRIEF_DATA.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" }) : ""), render: renderMorning },
-  today:    { title: "Today",     sub: () => prettyDate(STATE.anchor) + (STATE.anchor !== STATE.today ? " (next day with events)" : ""), render: renderToday },
-  week:     { title: "This Week", sub: () => "7-day overview", render: renderWeek },
-  upcoming: { title: "Upcoming",  sub: () => `${STATE.events.filter((e) => e.key >= STATE.today).length || STATE.events.length} events ahead`, render: renderUpcoming },
+  calendar: { title: () => ({ today: "Today", week: "This Week", upcoming: "Upcoming" }[CAL_MODE]), sub: calSub, render: renderCalendar },
   youtube:  { title: "YouTube",   sub: () => (window.YOUTUBE_DATA ? window.YOUTUBE_DATA.channel.title + " · analytics + daily ideas" : ""), render: renderYouTube },
   money:    { title: "Money",     sub: () => (window.MONEY_DATA ? "Net worth · budget · subscriptions" : ""), render: renderMoney },
   tasks:    { title: "Tasks",     sub: () => "Everything that needs you, in one place", render: renderTasks },
@@ -1160,7 +1174,7 @@ const VIEWS = {
 };
 function render() {
   const v = VIEWS[CURRENT];
-  document.getElementById("viewTitle").textContent = v.title;
+  document.getElementById("viewTitle").textContent = typeof v.title === "function" ? v.title() : v.title;
   document.getElementById("viewSub").textContent = v.sub();
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.classList.toggle("active", b.dataset.view === CURRENT));
@@ -1335,6 +1349,14 @@ function boot() {
     const lnk = e.target.closest && e.target.closest(".sec-link[data-view]");
     if (!lnk) return;
     e.preventDefault(); switchView(lnk.dataset.view);
+  });
+
+  // Calendar sub-view toggle (Today / Week / Upcoming).
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest && e.target.closest(".cal-seg-btn");
+    if (!btn) return;
+    CAL_MODE = btn.dataset.cal;
+    render();
   });
 
   loadData(window.CALENDAR_DATA || { events: [] });   // start from snapshot
