@@ -690,8 +690,12 @@ function fmtDue(iso) {
   const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   return day + " · " + time;
 }
-async function fillSchool() {
-  const el = document.getElementById("schoolCard");
+function fillSchool() { return loadCanvasInto("schoolCard"); }
+
+// Load live Canvas assignments into a given element id (used by the morning
+// brief and the School tab).
+async function loadCanvasInto(elId) {
+  const el = document.getElementById(elId);
   if (!el || !window.LifeOSSession || !LifeOSSession.getCanvas) return;
   const a = await LifeOSSession.getCanvas();
   if (a == null) { el.textContent = "Canvas not connected yet."; return; }
@@ -865,6 +869,116 @@ function wireMoney() {
   };
 }
 
+/* ---------- School / Academic planner view ---------- */
+let SCHOOL_LIVE = null;   // /school feed override
+
+async function fetchSchool() {
+  if (!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.getSchool)) return;
+  let s;
+  try { s = await LifeOSSession.getSchool(); } catch (e) { return; }
+  if (!s || typeof s !== "object") return;
+  SCHOOL_LIVE = s;
+  try { localStorage.setItem("lifeos-school-fed", JSON.stringify(s)); } catch (e) {}
+  if (CURRENT === "school") renderSchool();
+}
+
+function renderSchool() {
+  const S = SCHOOL_LIVE || window.SCHOOL_DATA;
+  const stats = document.getElementById("stats");
+  const view = document.getElementById("view");
+  if (!S) { stats.innerHTML = ""; view.innerHTML = `<div class="empty">No academic data yet — dispatch will fill this from your Chapman records.</div>`; return; }
+
+  const c = S.credits || {};
+  const done = c.completed || 0, need = c.required || 0, prog = c.inProgress || 0;
+  const left = Math.max(0, need - done - prog);
+  const pctDone = need ? Math.min(100, Math.round(done / need * 100)) : 0;
+  const pctProg = need ? Math.min(100 - pctDone, Math.round(prog / need * 100)) : 0;
+
+  stats.innerHTML = [
+    { label: "Credits done", value: done + "/" + need, sub: pctDone + "% of degree", accent: true },
+    { label: "In progress", value: prog, sub: "this term" },
+    { label: "Credits left", value: left, sub: "to graduate" },
+    { label: "GPA", value: (S.gpa != null ? S.gpa : "—"), sub: S.standing || "" },
+  ].map((s) => `
+    <div class="stat">
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-value ${s.accent ? "accent" : ""}">${escapeHtml(String(s.value))}</div>
+      <div class="stat-sub">${escapeHtml(s.sub)}</div>
+    </div>`).join("");
+
+  const reqs = (S.requirements || []).map((r) => {
+    const p = r.needed ? Math.min(100, Math.round(r.done / r.needed * 100)) : 0;
+    return `<div class="traffic-row">
+      <span class="traffic-label">${escapeHtml(r.category)}</span>
+      <span class="bar"><span class="bar-fill" style="width:${p}%"></span></span>
+      <span class="acct-bal">${r.done}/${r.needed}</span>
+    </div>`;
+  }).join("");
+
+  const taken = (S.taken || []).map((x) => `
+    <div class="course-row">
+      <span class="course-code">${escapeHtml(x.code || "")}</span>
+      <span class="course-title">${escapeHtml(x.title || "")}<span class="course-term">${escapeHtml(x.term || "")}</span></span>
+      <span class="course-grade">${escapeHtml(x.grade || "")}</span>
+      <span class="course-cr">${x.credits || 0}</span>
+    </div>`).join("");
+
+  const remaining = (S.remaining || []).map((x) => `
+    <div class="course-row">
+      <span class="course-code">${escapeHtml(x.code || "")}</span>
+      <span class="course-title">${escapeHtml(x.title || "")}<span class="course-term">${escapeHtml(x.category || "")}</span></span>
+      <span class="course-cr">${x.credits || 0}</span>
+    </div>`).join("");
+
+  const ab = S.abroad;
+  const abroad = ab ? `
+    <div class="abroad-card">
+      <div class="abroad-head">✈️ Study abroad · ${escapeHtml(ab.term || "")}</div>
+      <div class="abroad-loc">${escapeHtml(ab.location || "")}${ab.program ? " · " + escapeHtml(ab.program) : ""}</div>
+      ${ab.credits ? `<div class="abroad-credits">${ab.credits} credits</div>` : ""}
+      <div class="abroad-courses">${(ab.courses || []).map((co) => `
+        <div class="course-row">
+          <span class="course-code">${escapeHtml(co.code || "")}</span>
+          <span class="course-title">${escapeHtml(co.title || "")}<span class="course-term">${escapeHtml(co.countsAs || "")}</span></span>
+          <span class="course-cr">${co.credits || 0}</span>
+        </div>`).join("")}</div>
+      ${ab.note ? `<div class="abroad-note">${escapeHtml(ab.note)}</div>` : ""}
+    </div>` : "";
+
+  // Emails to respond (Outlook, pushed via the brief) + live Canvas homework.
+  const emails = (S.emails || (window.BRIEF_DATA && window.BRIEF_DATA.schoolEmail) || []);
+  const emailHtml = emails.length
+    ? `<div class="needs">${emails.map((i) => needRow({ key: i.url || i.title, url: i.url, extraClass: "school", title: i.title, why: i.why, from: i.from || "Outlook · Chapman" })).join("")}</div>`
+    : `<div class="acct-empty">No school emails flagged.</div>`;
+  const canSchool = !!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.getCanvas);
+
+  view.innerHTML = `
+    ${S.sample ? `<div class="insight">🎓 Sample plan — dispatch will fill this with your real Chapman records (courses, credits, degree audit, Prague). ${escapeHtml(S.school || "")}</div>` : `<div class="insight ok">🎓 ${escapeHtml(S.major || "")}${S.school ? " · " + escapeHtml(S.school) : ""}${S.updatedAt ? " · updated " + escapeHtml(S.updatedAt) : ""}</div>`}
+    <div class="degree">
+      <div class="degree-head"><span>${done + prog} of ${need} credits ${prog ? `(${done} done · ${prog} in progress)` : "done"}</span><span>${left} to go</span></div>
+      <div class="degree-bar"><span class="degree-fill" style="width:${pctDone}%"></span><span class="degree-fill prog" style="width:${pctProg}%"></span></div>
+    </div>
+    <div class="yt-grid">
+      <div class="yt-col">
+        <div class="yt-section-title">Requirements</div>
+        <div class="traffic school">${reqs || `<div class="acct-empty">No requirement breakdown yet.</div>`}</div>
+        <div class="yt-section-title">Still to take</div>
+        <div class="courses">${remaining || `<div class="acct-empty">Nothing outstanding.</div>`}</div>
+        <div class="yt-section-title">Classes taken</div>
+        <div class="courses">${taken || `<div class="acct-empty">No coursework yet.</div>`}</div>
+      </div>
+      <div class="yt-side">
+        ${abroad}
+        <div class="yt-section-title">Emails to respond</div>
+        ${emailHtml}
+        <div class="yt-section-title">Homework ${canSchool ? '<span class="live-dot"></span>' : ""}</div>
+        ${canSchool ? `<div id="schoolHW" class="soon-card">Loading assignments…</div>` : `<div class="acct-empty">Sign in to pull Canvas.</div>`}
+      </div>
+    </div>`;
+
+  if (canSchool) loadCanvasInto("schoolHW");
+}
+
 /* ---------- view switching ---------- */
 let CURRENT = "morning";
 const MORNING_TITLE = "Good morning" + (window.BRIEF_DATA && window.BRIEF_DATA.greetingName ? ", " + window.BRIEF_DATA.greetingName : "");
@@ -875,6 +989,7 @@ const VIEWS = {
   upcoming: { title: "Upcoming",  sub: () => `${STATE.events.filter((e) => e.key >= STATE.today).length || STATE.events.length} events ahead`, render: renderUpcoming },
   youtube:  { title: "YouTube",   sub: () => (window.YOUTUBE_DATA ? window.YOUTUBE_DATA.channel.title + " · analytics + daily ideas" : ""), render: renderYouTube },
   money:    { title: "Money",     sub: () => (window.MONEY_DATA ? "Net worth · budget · subscriptions" : ""), render: renderMoney },
+  school:   { title: "School",    sub: () => { const S = SCHOOL_LIVE || window.SCHOOL_DATA; return S ? (S.major || "Academic planner") + (S.standing ? " · " + S.standing : "") : "Academic planner"; }, render: renderSchool },
 };
 function render() {
   const v = VIEWS[CURRENT];
@@ -883,7 +998,7 @@ function render() {
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.classList.toggle("active", b.dataset.view === CURRENT));
 
-  if (CURRENT === "morning" || CURRENT === "youtube" || CURRENT === "money") {
+  if (CURRENT === "morning" || CURRENT === "youtube" || CURRENT === "money" || CURRENT === "school") {
     document.getElementById("legend").innerHTML = "";
     if (CURRENT === "money") document.getElementById("stats").innerHTML = "";
     v.render();
@@ -901,6 +1016,7 @@ function switchView(name) {
     fetchMoney();
     if (window.LifeOSPlaid && window.LifeOSPlaid.hasItems()) refreshMoney();
   }
+  if (name === "school") fetchSchool();
 }
 
 /* ---------- sync label + connection UI ---------- */
@@ -991,6 +1107,7 @@ function boot() {
   // Prefer the dispatch-fed cache, then Plaid's.
   try { const f = JSON.parse(localStorage.getItem("lifeos-money-fed")); if (f) LIVE_MONEY = f; } catch (e) {}
   if (!LIVE_MONEY && window.LifeOSPlaid && window.LifeOSPlaid.cache()) LIVE_MONEY = window.LifeOSPlaid.cache();
+  try { const sf = JSON.parse(localStorage.getItem("lifeos-school-fed")); if (sf) SCHOOL_LIVE = sf; } catch (e) {}
 
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.addEventListener("click", () => switchView(b.dataset.view)));
@@ -1031,6 +1148,7 @@ function boot() {
     fetchBrief();                             // freshest morning brief
     fetchStudio();                            // morning Studio-only metrics feed
     fetchMoney();                             // Rocket Money feed
+    fetchSchool();                            // academic planner feed
     pullDoneCloud();                          // sync checked-off to-dos across devices
   } else {
     if (window.LifeOSGoogle && LifeOSGoogle.isConfigured()) {
@@ -1050,6 +1168,7 @@ function boot() {
       fetchBrief();                           // refresh the brief
       fetchStudio();                          // refresh Studio metrics
       fetchMoney();                           // refresh money
+      fetchSchool();                          // refresh academic planner
       pullDoneCloud();                        // pick up checks made on other devices
       return;
     }

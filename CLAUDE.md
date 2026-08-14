@@ -71,6 +71,7 @@ Google account.
 - `YOUTUBE-FEED.md` — the morning Studio-metrics feed
 - `BRIEF-FEED.md` — the morning brief feed (news / needs-you / music / quote)
 - `MONEY-FEED.md` — the morning Money feed (Rocket Money → net worth / spending / subs)
+- `SCHOOL-FEED.md` — the academic-planner feed (Chapman records → School tab; occasional)
 
 ## Guardrails
 

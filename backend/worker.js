@@ -240,6 +240,29 @@ export default {
       return cors(json({ money: raw ? JSON.parse(raw) : null }), site);
     }
 
+    // 9) School / academic planner. Your run reads Chapman records (courses,
+    //    credits, degree audit, study-abroad) and POSTs them; the site renders
+    //    the School tab. KV-backed, keyed to your Google account. Needs LIFEOS_KV.
+    //      POST /school { session }          -> { school: <obj|null> }
+    //      POST /school { session, school }  -> { ok: true }
+    if (url.pathname === "/school" && request.method === "POST") {
+      if (!env.LIFEOS_KV) return cors(json({ error: "State store not configured" }, 400), site);
+      let body = {};
+      try { body = await request.json(); } catch (e) {}
+      if (!body.session) return cors(json({ error: "no session" }, 400), site);
+      const uid = await accountId(env, body.session);
+      if (!uid) return cors(json({ error: "unauthorized" }, 401), site);
+      const key = "school:" + uid;
+      if (body.school !== undefined) {
+        const rec = Object.assign({}, body.school);
+        if (!rec.updatedAt) rec.updatedAt = new Date().toISOString().slice(0, 10);
+        await env.LIFEOS_KV.put(key, JSON.stringify(rec));
+        return cors(json({ ok: true }), site);
+      }
+      const raw = await env.LIFEOS_KV.get(key);
+      return cors(json({ school: raw ? JSON.parse(raw) : null }), site);
+    }
+
     /* ---------- Money: Plaid bank sync ---------- */
 
     // P1) Mint a Link token — opens the Plaid popup on the site.

@@ -181,6 +181,33 @@ window.LifeOSSession = (function () {
     return true;
   }
 
+  // Academic planner (courses taken, degree progress, study-abroad) pushed by
+  // your daily run reading your Chapman records. Stored per Google account.
+  async function getSchool() {
+    if (!enabled() || !hasSession()) return undefined;
+    try {
+      const r = await fetch(base() + "/school", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ session: localStorage.getItem(KEY) }),
+      });
+      if (!r.ok) return undefined;
+      const j = await r.json();
+      return j.school;   // null = none stored yet; object = the plan
+    } catch (e) { return undefined; }
+  }
+  async function putSchool(school) {
+    if (!enabled()) throw new Error("No backend configured.");
+    if (!hasSession()) throw new Error("Not connected — open the dashboard and sign in first.");
+    const r = await fetch(base() + "/school", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ session: localStorage.getItem(KEY), school: school || {} }),
+    });
+    if (!r.ok) throw new Error("School save failed (" + r.status + ")");
+    return true;
+  }
+
   // Canvas assignments (via the Worker proxy). Returns [] or null if unavailable.
   async function getCanvas() {
     if (!enabled() || !hasSession()) return null;
@@ -196,5 +223,5 @@ window.LifeOSSession = (function () {
     } catch (e) { return null; }
   }
 
-  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState, getYouTubeFeed, putYouTubeFeed, getBrief, putBrief, getMoney, putMoney };
+  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState, getYouTubeFeed, putYouTubeFeed, getBrief, putBrief, getMoney, putMoney, getSchool, putSchool };
 })();

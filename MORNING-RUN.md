@@ -85,6 +85,18 @@ await window.LifeOSSession.putMoney({
 
 `await window.LifeOSSession.getBrief()` should return what you just pushed.
 
+### Occasional (not daily): academic planner
+
+When Simon's Chapman records change (new grades, schedule, advising, Prague
+plan), read his degree audit / transcript and push the **School** tab:
+
+```js
+await window.LifeOSSession.putSchool({ /* see SCHOOL-FEED.md */ });
+```
+
+Emails-to-respond already flow via `schoolEmail` in the brief, and homework comes
+live from Canvas — don't duplicate those here.
+
 ---
 
 ## Rules
