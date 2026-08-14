@@ -497,58 +497,99 @@ function ytDisconnect() {
   }
 }
 
-/* ---------- Morning brief view ---------- */
+/* ---------- Tasks: done / dismissed / user-added (synced via /state) ---------- */
 function loadDone() { try { return JSON.parse(localStorage.getItem("lifeos-done") || "{}"); } catch (e) { return {}; } }
-function saveDone(d) { localStorage.setItem("lifeos-done", JSON.stringify(d)); pushDoneCloud(); }
+function loadDismissed() { try { return JSON.parse(localStorage.getItem("lifeos-dismissed") || "{}"); } catch (e) { return {}; } }
+function loadUserTasks() { try { return JSON.parse(localStorage.getItem("lifeos-tasks") || "[]"); } catch (e) { return []; } }
+function saveDone(d) { localStorage.setItem("lifeos-done", JSON.stringify(d)); pushStateCloud(); }
+function saveDismissed(d) { localStorage.setItem("lifeos-dismissed", JSON.stringify(d)); pushStateCloud(); }
+function saveUserTasks(t) { localStorage.setItem("lifeos-tasks", JSON.stringify(t)); pushStateCloud(); }
 
-// --- Cross-device sync for checked-off to-dos (via the backend session) ---
-function doneSyncable() { return !!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.putState); }
-let _donePushTimer = null;
-function pushDoneCloud() {
-  if (!doneSyncable()) return;                 // stays local-only until you're logged in
-  clearTimeout(_donePushTimer);
-  _donePushTimer = setTimeout(() => { LifeOSSession.putState(loadDone()).catch(() => {}); }, 700);
+// Add a user-created task (shows in My tasks on Morning + Tasks). Persists + syncs.
+function addUserTask(title) {
+  title = String(title || "").trim();
+  if (!title) return;
+  const tasks = loadUserTasks();
+  tasks.unshift({ id: "u" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), title });
+  saveUserTasks(tasks);
+  if (CURRENT === "tasks") renderTasks();
+  else if (CURRENT === "morning") renderMorning();
 }
-// Pull the account's saved state and adopt it. First device to sync seeds the
-// cloud from its local checks; every other device then adopts the shared copy.
-async function pullDoneCloud() {
+// Delete a task entirely. User tasks are removed; fed items (needs/do-now/school)
+// are added to a dismissed set so they stay hidden even after the next feed.
+function deleteTask(key, isUser) {
+  if (isUser) saveUserTasks(loadUserTasks().filter((t) => t.id !== key));
+  else { const d = loadDismissed(); d[key] = true; saveDismissed(d); }
+  const dn = loadDone(); if (dn[key]) { delete dn[key]; localStorage.setItem("lifeos-done", JSON.stringify(dn)); }
+}
+
+// --- Cross-device sync (done + dismissed + user tasks) via the backend session ---
+function doneSyncable() { return !!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.putState); }
+function stateBlob() { return { v: 2, done: loadDone(), dismissed: loadDismissed(), tasks: loadUserTasks() }; }
+function stateHasLocal() { return Object.keys(loadDone()).length || Object.keys(loadDismissed()).length || loadUserTasks().length; }
+let _statePushTimer = null;
+function pushStateCloud() {
+  if (!doneSyncable()) return;                 // stays local-only until you're logged in
+  clearTimeout(_statePushTimer);
+  _statePushTimer = setTimeout(() => { LifeOSSession.putState(stateBlob()).catch(() => {}); }, 700);
+}
+// Pull the account's saved state and adopt it. First device seeds the cloud from
+// its local copy; every other device then adopts the shared copy.
+async function pullStateCloud() {
   if (!doneSyncable()) return;
   let cloud;
   try { cloud = await LifeOSSession.getState(); } catch (e) { return; }
   if (cloud === undefined) return;             // request failed — leave local as-is
   if (cloud === null) {                        // never saved yet → seed from this device
-    if (Object.keys(loadDone()).length) LifeOSSession.putState(loadDone()).catch(() => {});
+    if (stateHasLocal()) LifeOSSession.putState(stateBlob()).catch(() => {});
     return;
   }
-  localStorage.setItem("lifeos-done", JSON.stringify(cloud));
+  if (cloud && cloud.v === 2) {
+    localStorage.setItem("lifeos-done", JSON.stringify(cloud.done || {}));
+    localStorage.setItem("lifeos-dismissed", JSON.stringify(cloud.dismissed || {}));
+    localStorage.setItem("lifeos-tasks", JSON.stringify(cloud.tasks || []));
+  } else {
+    localStorage.setItem("lifeos-done", JSON.stringify(cloud));  // legacy: plain done-map
+  }
   updateNeedCount();
   if (CURRENT === "morning") renderMorning();
+  else if (CURRENT === "tasks") renderTasks();
 }
 
-// Keep the "Needs you" badge in sync with how many items are still un-done.
+// Keep the "Needs you" badge in sync (excludes done + deleted).
 function updateNeedCount() {
   const el = document.getElementById("needCount");
   const B = window.BRIEF_DATA;
   if (!el || !B || !B.needsYou) return;
-  const done = loadDone();
-  const n = (B.needsYou.items || []).filter((i) => !done[i.url || i.title]).length;
+  const done = loadDone(), dm = loadDismissed();
+  const n = (B.needsYou.items || []).filter((i) => { const k = i.url || i.title; return !done[k] && !dm[k]; }).length;
   el.textContent = n;
   el.style.display = n ? "" : "none";
 }
 
-// A checkable to-do row (used by "Needs you" and "School"). Tapping the box
-// crosses it out; the done state persists in localStorage.
+// A checkable, deletable to-do row. Checkbox crosses it out (persists); the ×
+// removes it entirely. Used by Needs-you, Do-now, School, and user tasks.
 function needRow(o) {
   const done = !!loadDone()[o.key];
+  const tag = o.url ? "a" : "div";
+  const attr = o.url ? ` href="${escapeHtml(o.url)}" target="_blank" rel="noopener"` : "";
   return `
-    <div class="need-item ${o.extraClass || ""} ${done ? "done" : ""}" data-key="${escapeHtml(o.key)}">
+    <div class="need-item ${o.extraClass || ""} ${done ? "done" : ""}" data-key="${escapeHtml(o.key)}"${o.user ? ' data-user="1"' : ""}>
       <button class="need-check" aria-checked="${done}" aria-label="Mark done" title="Mark done"></button>
-      <a class="need-body" href="${escapeHtml(o.url || "#")}" target="_blank" rel="noopener">
-        <div class="need-title">${o.titleHtml || escapeHtml(o.title)}</div>
+      <${tag} class="need-body"${attr}>
+        <div class="need-title">${o.titleHtml || escapeHtml(o.title)}${o.when ? ` <span class="task-when">${escapeHtml(o.when)}</span>` : ""}</div>
         ${o.why ? `<div class="need-why">${escapeHtml(o.why)}</div>` : ""}
         ${o.from ? `<div class="need-from">${escapeHtml(o.from)} ↗</div>` : ""}
-      </a>
+      </${tag}>
+      <button class="need-del" aria-label="Remove" title="Remove">×</button>
     </div>`;
+}
+// Add-a-task input row.
+function taskAddBox(ph, big) {
+  return `<div class="task-add${big ? " big" : ""}">
+    <input class="task-add-input" type="text" placeholder="${escapeHtml(ph || "Add a task…")}" aria-label="Add a task" />
+    <button class="task-add-btn">+ Add</button>
+  </div>`;
 }
 
 function daysUntil(dateStr) {
@@ -581,19 +622,9 @@ function watchRow(w) {
       <div class="watch-when ${soon ? "soon" : ""}">${escapeHtml(when)}</div>
     </a>`;
 }
-// A near-term "Do now" task — checkable, crosses out and persists like a to-do.
+// A near-term "Do now" task — checkable + deletable.
 function taskRow(w) {
-  const key = w.url || w.title;
-  const done = !!loadDone()[key];
-  const when = whenLabel(w);
-  return `
-    <div class="need-item task ${done ? "done" : ""}" data-key="${escapeHtml(key)}">
-      <button class="need-check" aria-checked="${done}" aria-label="Mark done" title="Mark done"></button>
-      <a class="need-body" href="${escapeHtml(w.url || "#")}" target="_blank" rel="noopener">
-        <div class="need-title">${escapeHtml(w.title)}${when ? ` <span class="task-when">${escapeHtml(when)}</span>` : ""}</div>
-        ${w.note ? `<div class="need-why">${escapeHtml(w.note)}</div>` : ""}
-      </a>
-    </div>`;
+  return needRow({ key: w.url || w.title, url: w.url, extraClass: "task", title: w.title, why: w.note, when: whenLabel(w) });
 }
 
 function renderMorning() {
@@ -633,14 +664,19 @@ function renderMorning() {
       ${f.url ? `<a class="fy-src" href="${escapeHtml(f.url)}" target="_blank" rel="noopener">source ↗</a>` : ""}
     </div>`).join("");
 
+  const dm = loadDismissed();
   const ny = B.needsYou || { count: 0, items: [] };
-  const needs = (ny.items || []).map((i) => needRow({
+  const needsItems = (ny.items || []).filter((i) => !dm[i.url || i.title]);
+  const needs = needsItems.map((i) => needRow({
     key: i.url || i.title, url: i.url, title: i.title, why: i.why, from: i.from,
   })).join("");
-  const undoneNeeds = (ny.items || []).filter((i) => !loadDone()[i.url || i.title]).length;
+  const undoneNeeds = needsItems.filter((i) => !loadDone()[i.url || i.title]).length;
+
+  const userTasks = loadUserTasks();
+  const myTasks = userTasks.map((t) => needRow({ key: t.id, title: t.title, user: true })).join("");
 
   const watchAll = B.watch || [];
-  const doNow = watchAll.filter(isNow);
+  const doNow = watchAll.filter((w) => isNow(w) && !dm[w.url || w.title]);
   const keepEye = watchAll.filter((w) => !isNow(w));
 
   const stale = B.date && B.date < todayKey();
@@ -663,13 +699,16 @@ function renderMorning() {
           <div class="fy-grid">${forYou}</div>
         </div>
         <div class="brief-side">
+          <div class="sec-label">My tasks <a class="sec-link" data-view="tasks">all ↗</a></div>
+          ${taskAddBox("Add a task…")}
+          ${myTasks ? `<div class="needs">${myTasks}</div>` : ""}
           <div class="sec-label">Needs you <span class="need-count" id="needCount"${undoneNeeds ? "" : ' style="display:none"'}>${undoneNeeds}</span></div>
-          ${ny.count ? `<div class="needs">${needs}</div>` : `<div class="soon-card">Inbox clear — nothing needs you ✨</div>`}
+          ${needs ? `<div class="needs">${needs}</div>` : `<div class="soon-card">Inbox clear — nothing needs you ✨</div>`}
           ${ny.filtered ? `<div class="need-filtered">${ny.filtered} newsletters &amp; receipts filtered out</div>` : ""}
           ${doNow.length ? `<div class="sec-label">Do now ✅</div><div class="needs">${doNow.map(taskRow).join("")}</div>` : ""}
           <div class="sec-label">School ${canSchool ? '<span class="live-dot"></span>' : ""}</div>
-          ${(B.schoolEmail && B.schoolEmail.length)
-            ? `<div class="needs">${B.schoolEmail.map((i) => needRow({ key: i.url || i.title, url: i.url, extraClass: "school", title: i.title, why: i.why, from: i.from || "Outlook · Chapman" })).join("")}</div>`
+          ${(B.schoolEmail || []).filter((i) => !dm[i.url || i.title]).length
+            ? `<div class="needs">${(B.schoolEmail || []).filter((i) => !dm[i.url || i.title]).map((i) => needRow({ key: i.url || i.title, url: i.url, extraClass: "school", title: i.title, why: i.why, from: i.from || "Outlook · Chapman" })).join("")}</div>`
             : ""}
           ${canSchool
             ? `<div id="schoolCard" class="soon-card">Loading assignments…</div>`
@@ -1053,6 +1092,39 @@ function renderSchool() {
   if (canSchool) loadCanvasInto("schoolHW");
 }
 
+/* ---------- Tasks view (unified hub) ---------- */
+function renderTasks() {
+  const stats = document.getElementById("stats");
+  const view = document.getElementById("view");
+  stats.innerHTML = "";
+  const dm = loadDismissed();
+  const B = window.BRIEF_DATA || {};
+  const userTasks = loadUserTasks();
+  const needs = ((B.needsYou && B.needsYou.items) || []).filter((i) => !dm[i.url || i.title]);
+  const now = (B.watch || []).filter((w) => isNow(w) && !dm[w.url || w.title]);
+  const school = (B.schoolEmail || []).filter((i) => !dm[i.url || i.title]);
+  const canSchool = !!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.getCanvas);
+
+  const sec = (label, html) => html ? `<div class="sec-label">${label}</div><div class="needs">${html}</div>` : "";
+  const openCount = userTasks.filter((t) => !loadDone()[t.id]).length
+    + needs.filter((i) => !loadDone()[i.url || i.title]).length
+    + now.filter((w) => !loadDone()[w.url || w.title]).length
+    + school.filter((i) => !loadDone()[i.url || i.title]).length;
+
+  view.innerHTML = `
+    <div class="tasks-wrap">
+      <div class="tasks-count">${openCount} open ${openCount === 1 ? "task" : "tasks"}</div>
+      ${taskAddBox("Add a task…", true)}
+      ${sec("My tasks", userTasks.map((t) => needRow({ key: t.id, title: t.title, user: true })).join("")) || `<div class="sec-label">My tasks</div><div class="soon-card">Nothing yet — add one above.</div>`}
+      ${sec("Needs you", needs.map((i) => needRow({ key: i.url || i.title, url: i.url, title: i.title, why: i.why, from: i.from })).join(""))}
+      ${sec("Do now", now.map(taskRow).join(""))}
+      ${sec("School", school.map((i) => needRow({ key: i.url || i.title, url: i.url, extraClass: "school", title: i.title, why: i.why, from: i.from || "Outlook · Chapman" })).join(""))}
+      ${canSchool ? `<div class="sec-label">Homework <span class="live-dot"></span></div><div id="tasksHW" class="soon-card">Loading assignments…</div>` : ""}
+    </div>`;
+
+  if (canSchool) loadCanvasInto("tasksHW");
+}
+
 /* ---------- view switching ---------- */
 let CURRENT = "morning";
 const MORNING_TITLE = "Good morning" + (window.BRIEF_DATA && window.BRIEF_DATA.greetingName ? ", " + window.BRIEF_DATA.greetingName : "");
@@ -1063,6 +1135,7 @@ const VIEWS = {
   upcoming: { title: "Upcoming",  sub: () => `${STATE.events.filter((e) => e.key >= STATE.today).length || STATE.events.length} events ahead`, render: renderUpcoming },
   youtube:  { title: "YouTube",   sub: () => (window.YOUTUBE_DATA ? window.YOUTUBE_DATA.channel.title + " · analytics + daily ideas" : ""), render: renderYouTube },
   money:    { title: "Money",     sub: () => (window.MONEY_DATA ? "Net worth · budget · subscriptions" : ""), render: renderMoney },
+  tasks:    { title: "Tasks",     sub: () => "Everything that needs you, in one place", render: renderTasks },
   school:   { title: "School",    sub: () => { const S = SCHOOL_LIVE || window.SCHOOL_DATA; return S ? (S.major || "Academic planner") + (S.standing ? " · " + S.standing : "") : "Academic planner"; }, render: renderSchool },
 };
 function render() {
@@ -1072,9 +1145,9 @@ function render() {
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.classList.toggle("active", b.dataset.view === CURRENT));
 
-  if (CURRENT === "morning" || CURRENT === "youtube" || CURRENT === "money" || CURRENT === "school") {
+  if (CURRENT === "morning" || CURRENT === "youtube" || CURRENT === "money" || CURRENT === "school" || CURRENT === "tasks") {
     document.getElementById("legend").innerHTML = "";
-    if (CURRENT === "money") document.getElementById("stats").innerHTML = "";
+    if (CURRENT === "money" || CURRENT === "tasks") document.getElementById("stats").innerHTML = "";
     v.render();
     return;
   }
@@ -1147,7 +1220,7 @@ async function goConnect() {
     }
     await refreshCalendar();
     if (backendActive() && window.LifeOSYouTube) refreshYouTube().catch(() => {});
-    pullDoneCloud();                          // adopt this account's checked-off to-dos
+    pullStateCloud();                          // adopt this account's checked-off to-dos
   } catch (e) {
     setSync("snapshot", window.CALENDAR_DATA && window.CALENDAR_DATA.syncedAt);
     renderConn("error", e.message);
@@ -1211,6 +1284,39 @@ function boot() {
     updateNeedCount();
   });
 
+  // Delete a task entirely (× button).
+  document.addEventListener("click", (e) => {
+    const del = e.target.closest && e.target.closest(".need-del");
+    if (!del) return;
+    e.preventDefault(); e.stopPropagation();
+    const row = del.closest(".need-item");
+    if (!row) return;
+    deleteTask(row.dataset.key, !!row.dataset.user);
+    row.remove();
+    updateNeedCount();
+    if (CURRENT === "tasks") renderTasks();
+  });
+
+  // Add a task (+ Add button or Enter in the input).
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest && e.target.closest(".task-add-btn");
+    if (!btn) return;
+    const inp = btn.closest(".task-add") && btn.closest(".task-add").querySelector(".task-add-input");
+    if (inp) { addUserTask(inp.value); inp.value = ""; inp.focus(); }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    const inp = e.target.closest && e.target.closest(".task-add-input");
+    if (!inp) return;
+    e.preventDefault(); addUserTask(inp.value); inp.value = "";
+  });
+  // "all ↗" link → Tasks tab.
+  document.addEventListener("click", (e) => {
+    const lnk = e.target.closest && e.target.closest(".sec-link[data-view]");
+    if (!lnk) return;
+    e.preventDefault(); switchView(lnk.dataset.view);
+  });
+
   loadData(window.CALENDAR_DATA || { events: [] });   // start from snapshot
   renderConn("snapshot");
 
@@ -1223,7 +1329,7 @@ function boot() {
     fetchStudio();                            // morning Studio-only metrics feed
     fetchMoney();                             // Rocket Money feed
     fetchSchool();                            // academic planner feed
-    pullDoneCloud();                          // sync checked-off to-dos across devices
+    pullStateCloud();                          // sync checked-off to-dos across devices
   } else {
     if (window.LifeOSGoogle && LifeOSGoogle.isConfigured()) {
       LifeOSGoogle.tryResume().then((data) => { if (data) { loadData(data); renderConn("live"); } }).catch(() => {});
@@ -1243,7 +1349,7 @@ function boot() {
       fetchStudio();                          // refresh Studio metrics
       fetchMoney();                           // refresh money
       fetchSchool();                          // refresh academic planner
-      pullDoneCloud();                        // pick up checks made on other devices
+      pullStateCloud();                        // pick up checks made on other devices
       return;
     }
     if (window.LifeOSGoogle && LifeOSGoogle.isConfigured() && !STATE.live) {
