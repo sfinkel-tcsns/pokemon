@@ -474,8 +474,14 @@ body {
 .miss { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #fff; background: var(--c-social); padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
 .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c-health); box-shadow: 0 0 7px var(--c-health); display: inline-block; }
 
+/* Tablet / narrow: collapse the two-column content layouts.
+   minmax(0, …) lets the single track shrink below its content's min-content
+   width instead of blowing the layout out horizontally. */
 @media (max-width: 900px) {
-  .brief-grid { grid-template-columns: 1fr; }
+  .brief-grid, .yt-grid { grid-template-columns: minmax(0, 1fr); }
+  .ideas-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .legend { justify-content: flex-start; max-width: none; }
 }
 
 /* ---------- Money ---------- */
@@ -522,17 +528,92 @@ body {
 /* ---------- misc ---------- */
 .empty { color: var(--text-faint); font-size: 14px; padding: 40px; text-align: center; }
 
-@media (max-width: 900px) {
-  .app { grid-template-columns: 1fr; }
-  .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px; }
-  .brand { padding: 4px 8px; }
-  .nav { flex-direction: row; }
-  .nav-section-label, .sidebar-foot .sync { display: none; }
-  .sidebar-foot { margin: 0; }
-  .stats { grid-template-columns: repeat(2, 1fr); }
-  .week { grid-template-columns: 1fr; }
-  .main { padding: 18px; }
-  .event { grid-template-columns: 78px 1fr; }
-  .yt-grid { grid-template-columns: 1fr; }
-  .ideas-grid { grid-template-columns: 1fr; }
+/* ============================================================
+   Phone: native app-style layout
+   - sidebar  -> fixed BOTTOM tab bar (one-tap view switching)
+   - brand + connection/theme -> fixed TOP app bar
+   - safe-area insets keep clear of the notch + home indicator
+   ============================================================ */
+@media (max-width: 760px) {
+  .app { display: block; }
+
+  /* Content sits between the two fixed bars */
+  .main {
+    padding: calc(56px + env(safe-area-inset-top)) 14px calc(74px + env(safe-area-inset-bottom));
+    max-width: none;
+  }
+
+  /* ---- BOTTOM tab bar (was the sidebar) ---- */
+  .sidebar {
+    position: fixed; left: 0; right: 0; bottom: 0; top: auto;
+    height: auto; flex-direction: row; gap: 0;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    border-right: none; border-top: 1px solid var(--line);
+    background: var(--bg-elev);
+    justify-content: space-around; align-items: stretch;
+    z-index: 60;
+    /* NB: no backdrop-filter here — it would trap the fixed top-bar children */
+  }
+  .sidebar .nav { display: contents; }                 /* flatten the 3 nav groups into one row */
+  .nav-section-label, .nav-item.soon { display: none; }
+  .nav-item {
+    flex: 1; min-width: 0;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; padding: 5px 2px; border-radius: 10px;
+    font-size: 10px; font-weight: 600; text-align: center; line-height: 1.1;
+    color: var(--text-faint);
+  }
+  .nav-item:hover:not(:disabled) { background: transparent; color: var(--text-faint); }
+  .nav-item.active { background: transparent; color: var(--accent); }
+  .nav-ico { font-size: 21px; width: auto; }
+  .soon-tag { display: none; }
+
+  /* ---- TOP app bar (brand left, controls right) ---- */
+  .brand {
+    position: fixed; top: 0; left: 0;
+    height: calc(52px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 0 0 15px;
+    display: flex; align-items: center; font-size: 18px; z-index: 61;
+  }
+  .sidebar-foot {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: calc(52px + env(safe-area-inset-top));
+    margin: 0; padding: env(safe-area-inset-top) 12px 0;
+    flex-direction: row; align-items: center; justify-content: flex-end; gap: 8px;
+    background: color-mix(in srgb, var(--bg-elev) 92%, transparent);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line); z-index: 60;
+  }
+  .sidebar-foot .conn { flex-direction: row; gap: 6px; }
+  .sidebar-foot .conn-hint, .sidebar-foot .conn-err { display: none; }
+  .conn-btn { width: auto; padding: 7px 12px; font-size: 12.5px; }
+  .foot-row { gap: 8px; }
+  .sync #syncLabel { display: none; }                  /* dot only on phone */
+
+  /* ---- content density ---- */
+  .topbar { flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
+  .topbar h1 { font-size: 22px; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .stat { padding: 13px 14px; }
+  .stat-value { font-size: 20px; }
+  .ideas-grid { grid-template-columns: minmax(0, 1fr); }
+
+  .week { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .day-col { min-height: auto; }
+
+  .event { grid-template-columns: 62px 1fr; gap: 10px; padding: 10px 8px; }
+
+  .up-date { position: static; }                       /* don't tuck under the app bar */
+
+  .money-ctl { align-items: flex-start; }
+  .money-btns { width: 100%; }
+}
+
+/* Extra-tight phones */
+@media (max-width: 380px) {
+  .nav-item { font-size: 9px; }
+  .nav-ico { font-size: 19px; }
+  .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sidebar-foot .sync { display: none; }               /* reclaim room for the connect button */
+  .conn-btn { padding: 6px 10px; font-size: 12px; }
 }
