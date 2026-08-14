@@ -34,7 +34,10 @@ own — leave them alone.)
   (Birthright Excel, Miracle Morning streak, school deadlines). Mark truly
   near-term/actionable ones with `"now": true`.
 - **Rocket Money** — net worth (Chase + Schwab + Wise), this month's budget +
-  spent, top spending categories, active subscriptions.
+  spent, top spending categories, active subscriptions. **`spent` = real
+  purchases only** — exclude Zelle/Venmo to people (e.g. money to his dad),
+  transfers between his own accounts, and credit-card payments. Counting those
+  makes the tab show a false over-budget red number.
 - **YouTube Studio** — CTR, impressions, RPM, revenue, retention. Use
   **channel-wide** figures (Shorts included), NOT the "Videos" long-form filter.
 

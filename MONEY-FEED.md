@@ -49,7 +49,11 @@ Once pushed, the Money tab shows a green "live" banner with the date instead of
 the "sample data" note. `live: true` is added automatically.
 
 ### Notes for dispatch
-- `budget` is Simon's monthly target (currently $1,800) — keep it unless he
-  changes it.
+- **Exclude transfers from `spent` and `spendingByCategory`.** Zelle/Venmo to
+  people (e.g. money to his dad), payments to his own accounts, credit-card
+  payments, and investment contributions are **not spending** — counting them
+  makes the tab render a scary red over-budget number that misdescribes his
+  actual spending. `spent` should be real purchases only.
+- `budget` is Simon's monthly target — keep it steady unless he changes it.
 - Everything is optional; send what you scraped. Whatever you send fully
   replaces the previous money snapshot (it is not merged).
