@@ -1150,10 +1150,46 @@ function renderTasks() {
 /* ---------- Calendar (Today / Week / Upcoming under one tab) ---------- */
 let CAL_MODE = "today";
 const CAL_MODES = [["today", "Today"], ["week", "Week"], ["upcoming", "Upcoming"]];
+function calCmdBar() {
+  const can = window.LifeOSSession && LifeOSSession.enabled() && LifeOSSession.hasSession() && LifeOSSession.calendarAct;
+  if (!can) return "";
+  return `<form class="cal-cmd" id="calCmd" autocomplete="off">
+    <span class="cal-cmd-spark">✨</span>
+    <input class="cal-cmd-input" id="calCmdInput" type="text" placeholder="Tell your calendar what to do — “move gym to 6pm tomorrow”, “add dentist Friday 2pm”…" aria-label="Calendar command" />
+    <button class="cal-cmd-btn" type="submit">Go</button>
+  </form>
+  <div class="cal-cmd-status" id="calCmdStatus"></div>`;
+}
 function renderCalendar() {
   const view = document.getElementById("view");
-  view.innerHTML = `<div class="cal-seg">${CAL_MODES.map(([m, l]) => `<button class="cal-seg-btn ${CAL_MODE === m ? "active" : ""}" data-cal="${m}">${l}</button>`).join("")}</div><div id="calBody"></div>`;
+  view.innerHTML = `${calCmdBar()}<div class="cal-seg">${CAL_MODES.map(([m, l]) => `<button class="cal-seg-btn ${CAL_MODE === m ? "active" : ""}" data-cal="${m}">${l}</button>`).join("")}</div><div id="calBody"></div>`;
   ({ today: renderToday, week: renderWeek, upcoming: renderUpcoming }[CAL_MODE] || renderToday)();
+}
+// Send a natural-language calendar command, then refresh the view.
+let CAL_CMD_BUSY = false;
+function submitCalCmd() {
+  if (CAL_CMD_BUSY) return;
+  const inp = document.getElementById("calCmdInput");
+  const text = inp && inp.value.trim();
+  if (!text) return;
+  CAL_CMD_BUSY = true;
+  const btn = document.querySelector("#calCmd .cal-cmd-btn");
+  if (inp) inp.disabled = true;
+  if (btn) { btn.disabled = true; btn.textContent = "…"; }
+  let st = document.getElementById("calCmdStatus");
+  if (st) { st.textContent = "Working on it…"; st.className = "cal-cmd-status working"; }
+  LifeOSSession.calendarAct(text).then(async (res) => {
+    await refreshCalendar().catch(() => {});   // reload events + re-render
+    st = document.getElementById("calCmdStatus"); // re-query (view was rebuilt)
+    if (st) { st.textContent = (res.ok === false ? "⚠️ " : "✓ ") + (res.message || "Done."); st.className = "cal-cmd-status " + (res.ok === false ? "err" : "ok"); }
+  }).catch((err) => {
+    st = document.getElementById("calCmdStatus");
+    if (st) { st.textContent = "⚠️ " + (err.message || err); st.className = "cal-cmd-status err"; }
+    const i2 = document.getElementById("calCmdInput");
+    if (i2) { i2.disabled = false; i2.value = text; i2.focus(); }
+    const b2 = document.querySelector("#calCmd .cal-cmd-btn");
+    if (b2) { b2.disabled = false; b2.textContent = "Go"; }
+  }).finally(() => { CAL_CMD_BUSY = false; });
 }
 function calSub() {
   if (CAL_MODE === "today") return prettyDate(STATE.anchor) + (STATE.anchor !== STATE.today ? " (next day with events)" : "");
@@ -1357,6 +1393,13 @@ function boot() {
     if (!btn) return;
     CAL_MODE = btn.dataset.cal;
     render();
+  });
+
+  // Natural-language calendar command bar.
+  document.addEventListener("submit", (e) => {
+    if (!(e.target && e.target.id === "calCmd")) return;
+    e.preventDefault();
+    submitCalCmd();
   });
 
   loadData(window.CALENDAR_DATA || { events: [] });   // start from snapshot

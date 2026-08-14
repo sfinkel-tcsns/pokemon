@@ -23,6 +23,11 @@
      LIFEOS_KV              a KV namespace binding (Workers → Settings → Bindings)
                             powers POST /state (to-dos) and POST /youtube (Studio metrics)
 
+   Optional (calendar command bar — natural-language event editing):
+     ANTHROPIC_API_KEY      from console.anthropic.com (used to parse commands)
+     ANTHROPIC_MODEL        optional model override (default claude-haiku-4-5)
+     (also requires the calendar.events scope above — reconnect once)
+
    Optional (Money tab — automatic bank sync via Plaid):
      PLAID_CLIENT_ID        from dashboard.plaid.com
      PLAID_SECRET           the secret for the env you're using
@@ -41,6 +46,7 @@
 const SCOPES = [
   "openid",
   "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/calendar.events",   // create/update/delete events (command bar)
   "https://www.googleapis.com/auth/yt-analytics.readonly",
   "https://www.googleapis.com/auth/youtube.readonly",
 ].join(" ");
@@ -263,6 +269,33 @@ export default {
       return cors(json({ school: raw ? JSON.parse(raw) : null }), site);
     }
 
+    // 10) Natural-language calendar command. The site sends plain English; we
+    //     ask Claude to turn it into a create/update/delete op (with the user's
+    //     upcoming events as context) and apply it to Google Calendar.
+    //     Needs ANTHROPIC_API_KEY + the calendar.events scope (reconnect once).
+    if (url.pathname === "/calendar/act" && request.method === "POST") {
+      if (!env.ANTHROPIC_API_KEY) return cors(json({ error: "Assistant not configured (ANTHROPIC_API_KEY)" }, 400), site);
+      let body = {};
+      try { body = await request.json(); } catch (e) {}
+      if (!body.session) return cors(json({ error: "no session" }, 400), site);
+      if (!body.text) return cors(json({ error: "no text" }, 400), site);
+      const at = await accessToken(env, body.session);
+      if (!at) return cors(json({ error: "unauthorized" }, 401), site);
+      const tz = body.timeZone || "America/Chicago";
+      const nowIso = body.now || new Date().toISOString();
+      // Upcoming events give Claude the ids it needs to move/rename/delete.
+      const timeMin = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+      const timeMax = new Date(Date.now() + 21 * 24 * 3600 * 1000).toISOString();
+      const evUrl = "https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&maxResults=50&timeMin=" +
+        encodeURIComponent(timeMin) + "&timeMax=" + encodeURIComponent(timeMax);
+      const evResp = await fetch(evUrl, { headers: { Authorization: "Bearer " + at } }).then((r) => r.json()).catch(() => ({}));
+      const events = (evResp.items || []).map((e) => ({ id: e.id, summary: e.summary || "(no title)", start: e.start && (e.start.dateTime || e.start.date), end: e.end && (e.end.dateTime || e.end.date) }));
+      const parsed = await claudeCalendar(env, body.text, tz, nowIso, events);
+      if (parsed.error) return cors(json({ error: parsed.error }, 502), site);
+      const result = await applyCalendarOp(at, tz, parsed);
+      return cors(json(result), site);
+    }
+
     /* ---------- Money: Plaid bank sync ---------- */
 
     // P1) Mint a Link token — opens the Plaid popup on the site.
@@ -340,6 +373,99 @@ async function accountId(env, session) {
     headers: { Authorization: "Bearer " + tok.access_token },
   }).then((r) => r.json()).catch(() => ({}));
   return info.sub || info.email || null;
+}
+
+// Mint a fresh Google access token from an encrypted session.
+async function accessToken(env, session) {
+  let refresh;
+  try { refresh = await decrypt(session, env.ENC_SECRET); } catch (e) { return null; }
+  const tok = await postForm("https://oauth2.googleapis.com/token", {
+    client_id: env.GOOGLE_CLIENT_ID,
+    client_secret: env.GOOGLE_CLIENT_SECRET,
+    refresh_token: refresh,
+    grant_type: "refresh_token",
+  });
+  return tok.access_token || null;
+}
+
+/* ---------- Calendar command (Claude → Google Calendar) ---------- */
+async function claudeCalendar(env, text, tz, nowIso, events) {
+  const tools = [
+    { name: "create_event", description: "Create a new calendar event.", input_schema: { type: "object", properties: {
+      summary: { type: "string", description: "Event title" },
+      start: { type: "string", description: "Local start as 'YYYY-MM-DDTHH:MM:SS' (timed) or 'YYYY-MM-DD' (all-day)" },
+      end: { type: "string", description: "Local end, same format as start. Optional." },
+      all_day: { type: "boolean" }, location: { type: "string" } }, required: ["summary", "start"] } },
+    { name: "update_event", description: "Modify an existing event (move time, rename, relocate). Use an event id from the provided list.", input_schema: { type: "object", properties: {
+      event_id: { type: "string" }, summary: { type: "string" }, start: { type: "string" }, end: { type: "string" }, location: { type: "string" } }, required: ["event_id"] } },
+    { name: "delete_event", description: "Delete/cancel an event by id.", input_schema: { type: "object", properties: { event_id: { type: "string" } }, required: ["event_id"] } },
+  ];
+  const sys = "You edit the user's Google Calendar. Current local time is " + nowIso + " (timezone " + tz + "). " +
+    "Interpret the request and call exactly ONE tool. For changes or deletions, choose the matching event by id from this list of upcoming events (JSON): " +
+    JSON.stringify(events) + ". Resolve relative dates/times against the current local time. Assume a 1-hour duration for new timed events when no end is given. " +
+    "Output wall-clock local times as 'YYYY-MM-DDTHH:MM:SS' with no timezone offset.";
+  let j;
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({ model: env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001", max_tokens: 1024, system: sys, tools, tool_choice: { type: "any" }, messages: [{ role: "user", content: text }] }),
+    });
+    j = await r.json();
+  } catch (e) { return { error: "Assistant unreachable." }; }
+  if (j.error) return { error: j.error.message || "assistant error" };
+  const tu = (j.content || []).find((c) => c.type === "tool_use");
+  if (!tu) return { error: "Couldn't understand that — try naming the event and time." };
+  return { tool: tu.name, input: tu.input };
+}
+function nextDay(ymd) {
+  const d = new Date(ymd + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+function plusHourLocal(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(iso);
+  if (!m) return iso;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6] || 0));
+  d.setUTCHours(d.getUTCHours() + 1);
+  return d.toISOString().slice(0, 19);
+}
+async function applyCalendarOp(at, tz, op) {
+  const CAL = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
+  const hdr = { Authorization: "Bearer " + at, "content-type": "application/json" };
+  const when = (v) => v == null ? undefined : (/T/.test(v) ? { dateTime: v.slice(0, 19), timeZone: tz } : { date: v });
+  const scopeMsg = (s) => s === 403 ? "Reconnect the dashboard to grant calendar edit access, then try again." : null;
+  try {
+    const i = op.input || {};
+    if (op.tool === "create_event") {
+      const allDay = i.all_day || (i.start && !/T/.test(i.start));
+      const start = when(i.start);
+      const end = i.end ? when(i.end) : (allDay ? { date: nextDay(i.start) } : { dateTime: plusHourLocal(i.start), timeZone: tz });
+      const b = { summary: i.summary || "(untitled)", start, end };
+      if (i.location) b.location = i.location;
+      const r = await fetch(CAL, { method: "POST", headers: hdr, body: JSON.stringify(b) });
+      if (!r.ok) return { ok: false, message: scopeMsg(r.status) || ("Calendar rejected the new event (" + r.status + ").") };
+      return { ok: true, message: "Added “" + b.summary + "”." };
+    }
+    if (op.tool === "update_event") {
+      if (!i.event_id) return { ok: false, message: "Couldn't find which event to change." };
+      const b = {};
+      if (i.summary) b.summary = i.summary;
+      if (i.start) b.start = when(i.start);
+      if (i.end) b.end = when(i.end);
+      if (i.location) b.location = i.location;
+      const r = await fetch(CAL + "/" + encodeURIComponent(i.event_id), { method: "PATCH", headers: hdr, body: JSON.stringify(b) });
+      if (!r.ok) return { ok: false, message: scopeMsg(r.status) || ("Calendar rejected the change (" + r.status + ").") };
+      const j = await r.json().catch(() => ({}));
+      return { ok: true, message: "Updated “" + (j.summary || "event") + "”." };
+    }
+    if (op.tool === "delete_event") {
+      if (!i.event_id) return { ok: false, message: "Couldn't find which event to delete." };
+      const r = await fetch(CAL + "/" + encodeURIComponent(i.event_id), { method: "DELETE", headers: { Authorization: "Bearer " + at } });
+      if (!r.ok && r.status !== 410) return { ok: false, message: scopeMsg(r.status) || ("Couldn't delete (" + r.status + ").") };
+      return { ok: true, message: "Deleted the event." };
+    }
+    return { ok: false, message: "Not sure what to do with that." };
+  } catch (e) { return { ok: false, message: String((e && e.message) || e) }; }
 }
 
 /* ---------- Plaid helpers ---------- */
