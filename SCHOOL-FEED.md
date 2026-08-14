@@ -31,6 +31,14 @@ current one with `await window.LifeOSSession.getSchool()`.
   "standing": "Junior",
   "gpa": 3.5,
   "credits": { "completed": 66, "required": 120, "inProgress": 15 },
+  "currentTerm": {                    // classes he's in RIGHT NOW → schedule grid + requirement check
+    "label": "Fall 2026",
+    "courses": [
+      { "code": "FP 315", "title": "Editing II", "credits": 3,
+        "days": "MW", "start": "09:00", "end": "11:50", "room": "Marion Knott 210",
+        "fills": "Major core" }                         // MUST match a `requirements[].category` exactly
+    ]
+  },
   "abroad": {
     "location": "Prague, Czech Republic",
     "program": "FAMU International",
@@ -50,6 +58,13 @@ current one with `await window.LifeOSSession.getSchool()`.
 ```
 
 ### Notes
+- **`currentTerm.courses`** drives the **weekly schedule** (`days` uses
+  M/T/W/R/F/S/U — R = Thursday; `start`/`end` are 24h "HH:MM") and the
+  **requirement check**. Each course's **`fills`** must match a
+  `requirements[].category` string exactly — the site then verifies it counts
+  toward a bucket where `done < needed` (✅) vs one already satisfied (⚠️
+  overflow) or unmapped. That's the "am I doing everything right?" checker, so
+  get `fills` right from the degree audit.
 - **`flags`** = the payoff of this tab: things to act on that the audit surfaces —
   in-cart-not-enrolled courses, unmet GE buckets, upper-division shortfalls,
   advising deadlines. `urgency: "now"` renders red, `"soon"` amber. Put the real,

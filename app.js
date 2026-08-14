@@ -872,6 +872,29 @@ function wireMoney() {
 /* ---------- School / Academic planner view ---------- */
 let SCHOOL_LIVE = null;   // /school feed override
 
+const DAYMAP = { M: "Mon", T: "Tue", W: "Wed", R: "Thu", F: "Fri", S: "Sat", U: "Sun" };
+const DAYORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+function courseDays(d) { const out = []; for (const ch of String(d || "")) if (DAYMAP[ch]) out.push(DAYMAP[ch]); return out; }
+function fmtClassTime(t) {
+  if (!t) return "";
+  const p = String(t).split(":"); const h = +p[0], m = +p[1] || 0;
+  if (isNaN(h)) return t;
+  const ap = h >= 12 ? "pm" : "am", hh = ((h + 11) % 12) + 1;
+  return hh + (m ? ":" + String(m).padStart(2, "0") : "") + ap;
+}
+// Does this course advance a requirement Simon still needs?
+function reqStatus(course, requirements) {
+  const fills = course.fills;
+  if (!fills) return { ok: false, label: "Not mapped — verify with advisor" };
+  const r = (requirements || []).find((x) => String(x.category).toLowerCase() === String(fills).toLowerCase());
+  if (r) {
+    return r.done < r.needed
+      ? { ok: true, label: "Counts toward " + fills + " (still needed)" }
+      : { ok: false, label: fills + " already satisfied — overflow, check with advisor" };
+  }
+  return { ok: true, label: "Counts as " + fills };
+}
+
 async function fetchSchool() {
   if (!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.getSchool)) return;
   let s;
@@ -952,6 +975,44 @@ function renderSchool() {
     : `<div class="acct-empty">No school emails flagged.</div>`;
   const canSchool = !!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.getCanvas);
 
+  // This-term schedule + requirement checker.
+  const ct = S.currentTerm;
+  let scheduleSection = "";
+  if (ct && ct.courses && ct.courses.length) {
+    const byDay = {}; DAYORDER.forEach((d) => (byDay[d] = []));
+    ct.courses.forEach((co) => courseDays(co.days).forEach((d) => byDay[d] && byDay[d].push(co)));
+    const daysWith = DAYORDER.filter((d) => byDay[d].length);
+    const gridDays = daysWith.length ? daysWith : ["Mon", "Tue", "Wed", "Thu", "Fri"];
+    const grid = gridDays.map((d) => `
+      <div class="cl-day">
+        <div class="cl-day-h">${d}</div>
+        ${byDay[d].slice().sort((a, b) => String(a.start || "").localeCompare(String(b.start || ""))).map((co) => `
+          <div class="cl-block">
+            <div class="cl-code">${escapeHtml(co.code || "")}</div>
+            <div class="cl-time">${escapeHtml(fmtClassTime(co.start))}${co.end ? "–" + escapeHtml(fmtClassTime(co.end)) : ""}</div>
+            ${co.room ? `<div class="cl-room">${escapeHtml(co.room)}</div>` : ""}
+          </div>`).join("") || `<div class="cl-empty">—</div>`}
+      </div>`).join("");
+    const checks = ct.courses.map((co) => ({ co, st: reqStatus(co, S.requirements) }));
+    const okCount = checks.filter((x) => x.st.ok).length;
+    const checkRows = checks.map(({ co, st }) => `
+      <div class="check-row ${st.ok ? "ok" : "warn"}">
+        <span class="check-ico">${st.ok ? "✅" : "⚠️"}</span>
+        <span class="check-body"><span class="check-course">${escapeHtml(co.code || "")} · ${escapeHtml(co.title || "")}</span><span class="check-label">${escapeHtml(st.label)}</span></span>
+        <span class="check-cr">${co.credits || 0} cr</span>
+      </div>`).join("");
+    const allOk = okCount === checks.length;
+    const summary = allOk
+      ? `✓ All ${checks.length} classes count toward requirements you still need.`
+      : `${okCount}/${checks.length} count toward needs — review the ${checks.length - okCount} flagged below.`;
+    scheduleSection = `
+      <div class="yt-section-title">This term${ct.label ? " · " + escapeHtml(ct.label) : ""}</div>
+      <div class="cl-week">${grid}</div>
+      <div class="yt-section-title">Requirement check</div>
+      <div class="check-summary ${allOk ? "ok" : "warn"}">${summary}</div>
+      <div class="checks">${checkRows}</div>`;
+  }
+
   // Advising / action items surfaced from the degree audit (dispatch pushes these).
   const flags = (S.flags || []);
   const flagHtml = flags.length ? `<div class="school-flags">${flags.map((f) => {
@@ -970,6 +1031,7 @@ function renderSchool() {
       <div class="degree-head"><span>${done + prog} of ${need} credits ${prog ? `(${done} done · ${prog} in progress)` : "done"}</span><span>${left} to go</span></div>
       <div class="degree-bar"><span class="degree-fill" style="width:${pctDone}%"></span><span class="degree-fill prog" style="width:${pctProg}%"></span></div>
     </div>
+    ${scheduleSection}
     <div class="yt-grid">
       <div class="yt-col">
         <div class="yt-section-title">Requirements</div>

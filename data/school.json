@@ -6,6 +6,16 @@
   "standing": "Junior",
   "gpa": 3.5,
   "credits": { "completed": 66, "required": 120, "inProgress": 15 },
+  "currentTerm": {
+    "label": "Fall 2026",
+    "courses": [
+      { "code": "FP 315",  "title": "Editing II",         "credits": 3, "days": "MW", "start": "09:00", "end": "11:50", "room": "Marion Knott 210", "fills": "Major core" },
+      { "code": "FP 237",  "title": "Cinematography I",   "credits": 3, "days": "MW", "start": "13:00", "end": "15:50", "room": "Marion Knott 004", "fills": "Major core" },
+      { "code": "FP 239",  "title": "Directing I",        "credits": 3, "days": "TR", "start": "10:00", "end": "12:50", "room": "Digital Media Arts 118", "fills": "Major core" },
+      { "code": "AVE 372", "title": "Unreal Engine",      "credits": 3, "days": "F",  "start": "13:00", "end": "15:50", "room": "Swenson 106", "fills": "Film electives" },
+      { "code": "CRPR 234","title": "Creative Producing",  "credits": 3, "days": "TR", "start": "14:00", "end": "15:20", "room": "Dodge 108", "fills": "General education" }
+    ]
+  },
   "abroad": {
     "location": "Prague, Czech Republic",
     "program": "FAMU International",
