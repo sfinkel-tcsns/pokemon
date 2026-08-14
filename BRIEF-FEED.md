@@ -44,7 +44,10 @@ keys. Summary:
     "count": 1, "filtered": 24,      // filtered = newsletters/receipts ignored
     "items": [ { "title": "…", "from": "…", "why": "…", "url": "https://mail.google.com/…" } ]
   },
-  "school": { "status": "coming", "note": "…" },   // Canvas is also fetched live by the site
+  "school": { "status": "coming", "note": "…" },   // fallback note; Canvas is fetched LIVE by the site
+  "schoolEmail": [                   // important OUTLOOK / Chapman emails you scraped (checkable)
+    { "title": "…", "why": "…", "from": "Outlook · Chapman", "url": "https://outlook.office.com/…" }
+  ],
   "watch": [                         // "Keep an eye on"; add "now": true to push an item into "Do now"
     { "title": "…", "now": true, "when": "this week", "note": "…", "url": "https://…" },
     { "title": "…", "date": "2026-09-25", "note": "…", "url": "https://…" }
@@ -67,4 +70,10 @@ keys. Summary:
 - **watch/do-now:** near-term actionable → `"now": true`; longer-horizon → leave
   it (optionally with a `"date"`). The site auto-sorts dated items within 7 days
   into "Do now" too.
+- **Outlook / Chapman email:** the site does NOT read Outlook — scan it in the
+  browser and put important school emails in `schoolEmail` (they show in the
+  School section, alongside the live Canvas assignments). Gmail needs-you stays
+  in `needsYou`.
+- **Canvas assignments** are fetched **live by the site** on its own — do NOT put
+  them in the brief.
 - Checked-off items already sync via `/state`; don't reset them.

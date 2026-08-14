@@ -668,9 +668,12 @@ function renderMorning() {
           ${ny.filtered ? `<div class="need-filtered">${ny.filtered} newsletters &amp; receipts filtered out</div>` : ""}
           ${doNow.length ? `<div class="sec-label">Do now ✅</div><div class="needs">${doNow.map(taskRow).join("")}</div>` : ""}
           <div class="sec-label">School ${canSchool ? '<span class="live-dot"></span>' : ""}</div>
+          ${(B.schoolEmail && B.schoolEmail.length)
+            ? `<div class="needs">${B.schoolEmail.map((i) => needRow({ key: i.url || i.title, url: i.url, extraClass: "school", title: i.title, why: i.why, from: i.from || "Outlook · Chapman" })).join("")}</div>`
+            : ""}
           ${canSchool
             ? `<div id="schoolCard" class="soon-card">Loading assignments…</div>`
-            : `<div class="soon-card">📚 ${escapeHtml((B.school && B.school.note) || "Outlook + Canvas — coming next.")}</div>`}
+            : (B.schoolEmail && B.schoolEmail.length ? "" : `<div class="soon-card">📚 ${escapeHtml((B.school && B.school.note) || "Outlook + Canvas — coming next.")}</div>`)}
           ${keepEye.length ? `<div class="sec-label">Keep an eye on 👀</div><div class="watch-list">${keepEye.map(watchRow).join("")}</div>` : ""}
           <div class="sec-label">Music to try ${music.vibe ? `· <span class="music-vibe">${escapeHtml(music.vibe)}</span>` : ""}</div>
           ${musicHtml}

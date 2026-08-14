@@ -21,8 +21,12 @@ own — leave them alone.)
   AI, film school at Chapman, internship hunting.
 - **Gmail needs-you** — scan the inbox for things that **genuinely need Simon**:
   replies owed, documents to sign, real deadlines, messages from actual people /
-  school / opportunities. **Ignore** newsletters, receipts, promos, login codes,
-  auto-notifications. Count what you ignored (that's `filtered`).
+  opportunities. **Ignore** newsletters, receipts, promos, login codes,
+  auto-notifications. Count what you ignored (that's `filtered`). → `needsYou`.
+- **Outlook (Chapman) email** — the site can't read Outlook, so scan his
+  Chapman/Outlook inbox in the browser and pull the important **school** emails
+  (advising, deadlines, professor messages, registrar/billing). → `schoolEmail`.
+  (**Canvas** assignments load live on their own — do NOT scrape those.)
 - **Music** — **discovery, not his rotation**: 2 new songs he'd probably like
   (his lane: Alex G, Nick Drake, MJ Lenderman, Adrianne Lenker, Duster), 1
   movie/show **score** (he loves *Her* and *Luca*), 1 **album** to try.
@@ -53,6 +57,7 @@ await window.LifeOSSession.putBrief({
   headline: { title: "…", summary: "…", source: "…", url: "https://…" },
   forYou: [ { tag: "YouTube", color: "#e0454f", text: "…", action: "→ …", url: "https://…" } ],
   needsYou: { count: 1, filtered: 20, items: [ { title: "…", from: "…", why: "…", url: "https://mail.google.com/…" } ] },
+  schoolEmail: [ { title: "…", why: "…", from: "Outlook · Chapman", url: "https://outlook.office.com/…" } ],
   watch: [ { title: "…", now: true, when: "this week", note: "…", url: "https://…" } ],
   music: { vibe: "Fresh finds", songs: [ { title:"…", artist:"…", note:"…" } ], score: {…}, album: {…} }
 });
