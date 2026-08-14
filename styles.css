@@ -554,6 +554,21 @@ body {
 .abroad-credits { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
 .abroad-courses { margin-top: 10px; }
 .abroad-note { font-size: 12px; color: var(--text-dim); margin-top: 10px; line-height: 1.45; }
+.abroad-courses:empty { display: none; }
+.school-flags { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.school-flag {
+  display: flex; align-items: flex-start; gap: 11px; text-decoration: none;
+  padding: 11px 14px; border-radius: var(--radius);
+  background: color-mix(in srgb, var(--c-meal) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-meal) 30%, transparent);
+  color: var(--text); transition: background .12s;
+}
+.school-flag:hover { background: color-mix(in srgb, var(--c-meal) 18%, transparent); }
+.school-flag.now { background: color-mix(in srgb, var(--c-social) 13%, transparent); border-color: color-mix(in srgb, var(--c-social) 34%, transparent); }
+.flag-ico { font-size: 15px; line-height: 1.3; flex: none; }
+.flag-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.flag-title { font-size: 13.5px; font-weight: 600; }
+.flag-why { font-size: 12.5px; color: var(--text-dim); line-height: 1.45; }
 
 .brief-stale {
   font-size: 12.5px; color: var(--text-dim); line-height: 1.5;

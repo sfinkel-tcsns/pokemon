@@ -39,6 +39,10 @@ current one with `await window.LifeOSSession.getSchool()`.
     "note": "…advisor caveat…",
     "courses": [ { "code": "FAMU 301", "title": "Directing for Film & TV", "credits": 4, "countsAs": "Major — Directing" } ]
   },
+  "flags": [                          // advising / action items — shown at the TOP of the tab
+    { "urgency": "now",  "title": "Register ENG 208 (in cart, not enrolled)", "why": "Satisfies Written Inquiry GE; classes start Aug 24.", "url": "https://studentcenter.chapman.edu/…" },
+    { "urgency": "soon", "title": "Raise upper-division credits with advising", "why": "Need 42 upper-div (30 at Chapman); constrains which term you can go abroad." }
+  ],
   "requirements": [ { "category": "Major core", "done": 27, "needed": 45 } ],
   "taken":     [ { "code": "FILM 101", "title": "Intro to Visual Storytelling", "credits": 3, "grade": "A", "term": "Fa 2024" } ],
   "remaining": [ { "code": "FILM 480", "title": "Senior Thesis Production", "credits": 4, "category": "Major core" } ]
@@ -46,6 +50,12 @@ current one with `await window.LifeOSSession.getSchool()`.
 ```
 
 ### Notes
+- **`flags`** = the payoff of this tab: things to act on that the audit surfaces —
+  in-cart-not-enrolled courses, unmet GE buckets, upper-division shortfalls,
+  advising deadlines. `urgency: "now"` renders red, `"soon"` amber. Put the real,
+  checked findings here; don't invent them.
+- `abroad`: if there's **no enrollment**, leave `courses` empty and use `note`
+  to state the real status (advising appt, deadline) — don't fabricate a plan.
 - Pull from his **degree audit** where possible — it already knows requirement
   buckets and what's outstanding.
 - `abroad.courses[].countsAs` should say which Dodge requirement each FAMU/Prague

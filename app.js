@@ -952,8 +952,20 @@ function renderSchool() {
     : `<div class="acct-empty">No school emails flagged.</div>`;
   const canSchool = !!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.getCanvas);
 
+  // Advising / action items surfaced from the degree audit (dispatch pushes these).
+  const flags = (S.flags || []);
+  const flagHtml = flags.length ? `<div class="school-flags">${flags.map((f) => {
+    const now = f.urgency === "now";
+    const tag = f.url ? "a" : "div";
+    return `<${tag} class="school-flag ${now ? "now" : ""}" ${f.url ? `href="${escapeHtml(f.url)}" target="_blank" rel="noopener"` : ""}>
+      <span class="flag-ico">${now ? "⚠️" : "📌"}</span>
+      <span class="flag-body"><span class="flag-title">${escapeHtml(f.title || "")}</span>${f.why ? `<span class="flag-why">${escapeHtml(f.why)}</span>` : ""}</span>
+    </${tag}>`;
+  }).join("")}</div>` : "";
+
   view.innerHTML = `
-    ${S.sample ? `<div class="insight">🎓 Sample plan — dispatch will fill this with your real Chapman records (courses, credits, degree audit, Prague). ${escapeHtml(S.school || "")}</div>` : `<div class="insight ok">🎓 ${escapeHtml(S.major || "")}${S.school ? " · " + escapeHtml(S.school) : ""}${S.updatedAt ? " · updated " + escapeHtml(S.updatedAt) : ""}</div>`}
+    ${S.sample ? `<div class="insight">🎓 Sample plan — dispatch will fill this with your real Chapman records (courses, credits, degree audit). ${escapeHtml(S.school || "")}</div>` : `<div class="insight ok">🎓 ${escapeHtml(S.major || "")}${S.school ? " · " + escapeHtml(S.school) : ""}${S.updatedAt ? " · updated " + escapeHtml(S.updatedAt) : ""}</div>`}
+    ${flagHtml}
     <div class="degree">
       <div class="degree-head"><span>${done + prog} of ${need} credits ${prog ? `(${done} done · ${prog} in progress)` : "done"}</span><span>${left} to go</span></div>
       <div class="degree-bar"><span class="degree-fill" style="width:${pctDone}%"></span><span class="degree-fill prog" style="width:${pctProg}%"></span></div>
