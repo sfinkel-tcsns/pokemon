@@ -445,7 +445,31 @@ function ytDisconnect() {
 
 /* ---------- Morning brief view ---------- */
 function loadDone() { try { return JSON.parse(localStorage.getItem("lifeos-done") || "{}"); } catch (e) { return {}; } }
-function saveDone(d) { localStorage.setItem("lifeos-done", JSON.stringify(d)); }
+function saveDone(d) { localStorage.setItem("lifeos-done", JSON.stringify(d)); pushDoneCloud(); }
+
+// --- Cross-device sync for checked-off to-dos (via the backend session) ---
+function doneSyncable() { return !!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.putState); }
+let _donePushTimer = null;
+function pushDoneCloud() {
+  if (!doneSyncable()) return;                 // stays local-only until you're logged in
+  clearTimeout(_donePushTimer);
+  _donePushTimer = setTimeout(() => { LifeOSSession.putState(loadDone()).catch(() => {}); }, 700);
+}
+// Pull the account's saved state and adopt it. First device to sync seeds the
+// cloud from its local checks; every other device then adopts the shared copy.
+async function pullDoneCloud() {
+  if (!doneSyncable()) return;
+  let cloud;
+  try { cloud = await LifeOSSession.getState(); } catch (e) { return; }
+  if (cloud === undefined) return;             // request failed — leave local as-is
+  if (cloud === null) {                        // never saved yet → seed from this device
+    if (Object.keys(loadDone()).length) LifeOSSession.putState(loadDone()).catch(() => {});
+    return;
+  }
+  localStorage.setItem("lifeos-done", JSON.stringify(cloud));
+  updateNeedCount();
+  if (CURRENT === "morning") renderMorning();
+}
 
 // Keep the "Needs you" badge in sync with how many items are still un-done.
 function updateNeedCount() {
@@ -871,6 +895,7 @@ async function goConnect() {
     }
     await refreshCalendar();
     if (backendActive() && window.LifeOSYouTube) refreshYouTube().catch(() => {});
+    pullDoneCloud();                          // adopt this account's checked-off to-dos
   } catch (e) {
     setSync("snapshot", window.CALENDAR_DATA && window.CALENDAR_DATA.syncedAt);
     renderConn("error", e.message);
@@ -939,6 +964,7 @@ function boot() {
     // Permanent backend login — one session, no popups, ever.
     refreshCalendar().catch(() => {});
     if (window.LifeOSYouTube) refreshYouTube().catch(() => {});
+    pullDoneCloud();                          // sync checked-off to-dos across devices
   } else {
     if (window.LifeOSGoogle && LifeOSGoogle.isConfigured()) {
       LifeOSGoogle.tryResume().then((data) => { if (data) { loadData(data); renderConn("live"); } }).catch(() => {});
@@ -954,6 +980,7 @@ function boot() {
     if (backendActive()) {
       if (!STATE.live) refreshCalendar().catch(() => {});
       if (!(YT_DATA && YT_DATA.live)) refreshYouTube().catch(() => {});
+      pullDoneCloud();                        // pick up checks made on other devices
       return;
     }
     if (window.LifeOSGoogle && LifeOSGoogle.isConfigured() && !STATE.live) {

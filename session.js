@@ -72,6 +72,33 @@ window.LifeOSSession = (function () {
 
   function disconnect() { clear(); }
 
+  // Cross-device app state (e.g. checked-off to-dos), stored server-side keyed
+  // to your Google account so it syncs across every device you're signed in on.
+  async function getState() {
+    if (!enabled() || !hasSession()) return undefined;
+    try {
+      const r = await fetch(base() + "/state", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ session: localStorage.getItem(KEY) }),
+      });
+      if (!r.ok) return undefined;
+      const j = await r.json();
+      return j.state;   // null = never saved yet; object = saved state
+    } catch (e) { return undefined; }
+  }
+  async function putState(state) {
+    if (!enabled() || !hasSession()) return false;
+    try {
+      const r = await fetch(base() + "/state", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ session: localStorage.getItem(KEY), state: state || {} }),
+      });
+      return r.ok;
+    } catch (e) { return false; }
+  }
+
   // Canvas assignments (via the Worker proxy). Returns [] or null if unavailable.
   async function getCanvas() {
     if (!enabled() || !hasSession()) return null;
@@ -87,5 +114,5 @@ window.LifeOSSession = (function () {
     } catch (e) { return null; }
   }
 
-  return { enabled, hasSession, connect, getToken, disconnect, getCanvas };
+  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState };
 })();

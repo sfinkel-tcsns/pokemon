@@ -19,6 +19,9 @@
      ENC_SECRET             any long random string (used to encrypt the token)
      SITE_ORIGIN            e.g. https://sfinkel-tcsns.github.io
 
+   Optional (cross-device sync of checked-off to-dos):
+     LIFEOS_KV              a KV namespace binding (Workers → Settings → Bindings)
+
    Optional (Money tab — automatic bank sync via Plaid):
      PLAID_CLIENT_ID        from dashboard.plaid.com
      PLAID_SECRET           the secret for the env you're using
@@ -145,6 +148,40 @@ export default {
         .slice(0, 12)
         .map((e) => ({ title: e.title, course: e.course, dueAt: e.start.toISOString(), url: e.url, type: "assignment", missing: false }));
       return cors(json({ assignments }), site);
+    }
+
+    // 5) Cross-device app state (checked-off to-dos). Stored in Cloudflare KV,
+    //    keyed to your Google account so every signed-in device shares it.
+    //    Needs a KV namespace bound as LIFEOS_KV.
+    //      POST /state { session }          -> load  -> { state: <obj|null> }
+    //      POST /state { session, state }   -> save  -> { ok: true }
+    if (url.pathname === "/state" && request.method === "POST") {
+      if (!env.LIFEOS_KV) return cors(json({ error: "State store not configured" }, 400), site);
+      let body = {};
+      try { body = await request.json(); } catch (e) {}
+      if (!body.session) return cors(json({ error: "no session" }, 400), site);
+      let refresh;
+      try { refresh = await decrypt(body.session, env.ENC_SECRET); } catch (e) { return cors(json({ error: "bad session" }, 400), site); }
+      // Resolve a stable per-account id (Google "sub") to key the state on.
+      const tok = await postForm("https://oauth2.googleapis.com/token", {
+        client_id: env.GOOGLE_CLIENT_ID,
+        client_secret: env.GOOGLE_CLIENT_SECRET,
+        refresh_token: refresh,
+        grant_type: "refresh_token",
+      });
+      if (!tok.access_token) return cors(json({ error: "auth" }, 401), site);
+      const info = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: "Bearer " + tok.access_token },
+      }).then((r) => r.json()).catch(() => ({}));
+      const uid = info.sub || info.email;
+      if (!uid) return cors(json({ error: "no user" }, 401), site);
+      const key = "state:" + uid;
+      if (body.state !== undefined) {
+        await env.LIFEOS_KV.put(key, JSON.stringify(body.state));
+        return cors(json({ ok: true }), site);
+      }
+      const raw = await env.LIFEOS_KV.get(key);
+      return cors(json({ state: raw ? JSON.parse(raw) : null }), site);
     }
 
     /* ---------- Money: Plaid bank sync ---------- */
