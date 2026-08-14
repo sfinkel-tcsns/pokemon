@@ -395,6 +395,34 @@ function renderYouTube() {
 
 // overlay live API numbers but keep Studio-only fields (CTR, impressions,
 // revenue, facts, device split) the API can't provide, then re-render.
+let STUDIO = null;   // Studio-only metrics fed in each morning (CTR/impressions/RPM/…)
+
+// Merge the morning Studio feed on top of whatever YouTube data we have.
+// Studio wins for the fields the API can't provide; sub-objects merge so it
+// fills gaps (e.g. adds device split) instead of wiping age/gender.
+function applyStudioOver(yt) {
+  if (!STUDIO || !yt) return yt;
+  ["analytics", "channel", "audience"].forEach((k) => {
+    if (STUDIO[k] && typeof STUDIO[k] === "object") yt[k] = Object.assign({}, yt[k], STUDIO[k]);
+  });
+  ["facts", "traffic", "topRecent", "insight", "ideasToday", "pipeline"].forEach((k) => {
+    if (STUDIO[k] !== undefined) yt[k] = STUDIO[k];
+  });
+  if (STUDIO.updatedAt) yt.studioAt = STUDIO.updatedAt;
+  return yt;
+}
+
+// Pull the stored Studio feed and re-render (backend session required).
+async function fetchStudio() {
+  if (!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.getYouTubeFeed)) return;
+  let m;
+  try { m = await LifeOSSession.getYouTubeFeed(); } catch (e) { return; }
+  if (m === undefined) return;   // request failed — leave current data
+  STUDIO = m;                    // null (none yet) or the payload object
+  applyStudioOver(YT_DATA);
+  if (CURRENT === "youtube") renderYouTube();
+}
+
 function applyLiveYT(live) {
   const snap = window.YOUTUBE_DATA || {};
   const mergedAudience = Object.assign({}, snap.audience, {
@@ -409,6 +437,7 @@ function applyLiveYT(live) {
     topRecent: live.topRecent,
     live: true, syncedAt: live.syncedAt,
   });
+  applyStudioOver(YT_DATA);   // Studio-only fields win over both seed and API
   if (CURRENT === "youtube") renderYouTube();
 }
 
@@ -420,6 +449,7 @@ async function ytConnect() {
       await LifeOSSession.connect();   // one backend login covers Calendar + YouTube
     }
     applyLiveYT(await LifeOSYouTube.fetchAll());
+    fetchStudio();
     if (backendActive()) refreshCalendar().catch(() => {});
   } catch (e) {
     const el = document.getElementById("ytErr");
@@ -964,6 +994,7 @@ function boot() {
     // Permanent backend login — one session, no popups, ever.
     refreshCalendar().catch(() => {});
     if (window.LifeOSYouTube) refreshYouTube().catch(() => {});
+    fetchStudio();                            // morning Studio-only metrics feed
     pullDoneCloud();                          // sync checked-off to-dos across devices
   } else {
     if (window.LifeOSGoogle && LifeOSGoogle.isConfigured()) {
@@ -980,6 +1011,7 @@ function boot() {
     if (backendActive()) {
       if (!STATE.live) refreshCalendar().catch(() => {});
       if (!(YT_DATA && YT_DATA.live)) refreshYouTube().catch(() => {});
+      fetchStudio();                          // refresh Studio metrics
       pullDoneCloud();                        // pick up checks made on other devices
       return;
     }

@@ -99,6 +99,34 @@ window.LifeOSSession = (function () {
     } catch (e) { return false; }
   }
 
+  // YouTube "Studio-only" metrics (CTR, impressions, RPM, revenue, retention…)
+  // that no API exposes. Your morning browser run POSTs them here; the site
+  // GETs them and merges over the live API data. Stored per Google account.
+  async function getYouTubeFeed() {
+    if (!enabled() || !hasSession()) return undefined;
+    try {
+      const r = await fetch(base() + "/youtube", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ session: localStorage.getItem(KEY) }),
+      });
+      if (!r.ok) return undefined;
+      const j = await r.json();
+      return j.metrics;   // null = none saved yet; object = the saved payload
+    } catch (e) { return undefined; }
+  }
+  async function putYouTubeFeed(metrics) {
+    if (!enabled()) throw new Error("No backend configured.");
+    if (!hasSession()) throw new Error("Not connected — open the dashboard and sign in first.");
+    const r = await fetch(base() + "/youtube", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ session: localStorage.getItem(KEY), metrics: metrics || {} }),
+    });
+    if (!r.ok) throw new Error("Feed save failed (" + r.status + ")");
+    return true;
+  }
+
   // Canvas assignments (via the Worker proxy). Returns [] or null if unavailable.
   async function getCanvas() {
     if (!enabled() || !hasSession()) return null;
@@ -114,5 +142,5 @@ window.LifeOSSession = (function () {
     } catch (e) { return null; }
   }
 
-  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState };
+  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState, getYouTubeFeed, putYouTubeFeed };
 })();

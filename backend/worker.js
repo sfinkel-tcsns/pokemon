@@ -19,8 +19,9 @@
      ENC_SECRET             any long random string (used to encrypt the token)
      SITE_ORIGIN            e.g. https://sfinkel-tcsns.github.io
 
-   Optional (cross-device sync of checked-off to-dos):
+   Optional (cross-device to-do sync + morning YouTube-Studio feed):
      LIFEOS_KV              a KV namespace binding (Workers → Settings → Bindings)
+                            powers POST /state (to-dos) and POST /youtube (Studio metrics)
 
    Optional (Money tab — automatic bank sync via Plaid):
      PLAID_CLIENT_ID        from dashboard.plaid.com
@@ -160,21 +161,8 @@ export default {
       let body = {};
       try { body = await request.json(); } catch (e) {}
       if (!body.session) return cors(json({ error: "no session" }, 400), site);
-      let refresh;
-      try { refresh = await decrypt(body.session, env.ENC_SECRET); } catch (e) { return cors(json({ error: "bad session" }, 400), site); }
-      // Resolve a stable per-account id (Google "sub") to key the state on.
-      const tok = await postForm("https://oauth2.googleapis.com/token", {
-        client_id: env.GOOGLE_CLIENT_ID,
-        client_secret: env.GOOGLE_CLIENT_SECRET,
-        refresh_token: refresh,
-        grant_type: "refresh_token",
-      });
-      if (!tok.access_token) return cors(json({ error: "auth" }, 401), site);
-      const info = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-        headers: { Authorization: "Bearer " + tok.access_token },
-      }).then((r) => r.json()).catch(() => ({}));
-      const uid = info.sub || info.email;
-      if (!uid) return cors(json({ error: "no user" }, 401), site);
+      const uid = await accountId(env, body.session);
+      if (!uid) return cors(json({ error: "unauthorized" }, 401), site);
       const key = "state:" + uid;
       if (body.state !== undefined) {
         await env.LIFEOS_KV.put(key, JSON.stringify(body.state));
@@ -182,6 +170,30 @@ export default {
       }
       const raw = await env.LIFEOS_KV.get(key);
       return cors(json({ state: raw ? JSON.parse(raw) : null }), site);
+    }
+
+    // 6) YouTube "Studio-only" metrics feed. Your morning browser run POSTs the
+    //    numbers no API exposes (CTR, impressions, RPM, revenue, retention…);
+    //    the site GETs them and merges over the live API data. KV-backed,
+    //    keyed to your Google account. Needs LIFEOS_KV.
+    //      POST /youtube { session }            -> { metrics: <obj|null> }
+    //      POST /youtube { session, metrics }   -> { ok: true }
+    if (url.pathname === "/youtube" && request.method === "POST") {
+      if (!env.LIFEOS_KV) return cors(json({ error: "State store not configured" }, 400), site);
+      let body = {};
+      try { body = await request.json(); } catch (e) {}
+      if (!body.session) return cors(json({ error: "no session" }, 400), site);
+      const uid = await accountId(env, body.session);
+      if (!uid) return cors(json({ error: "unauthorized" }, 401), site);
+      const key = "youtube:" + uid;
+      if (body.metrics !== undefined) {
+        const rec = Object.assign({}, body.metrics);
+        if (!rec.updatedAt) rec.updatedAt = new Date().toISOString();
+        await env.LIFEOS_KV.put(key, JSON.stringify(rec));
+        return cors(json({ ok: true }), site);
+      }
+      const raw = await env.LIFEOS_KV.get(key);
+      return cors(json({ metrics: raw ? JSON.parse(raw) : null }), site);
     }
 
     /* ---------- Money: Plaid bank sync ---------- */
@@ -243,6 +255,25 @@ export default {
     return new Response("Life OS auth backend is running.", { status: 200 });
   },
 };
+
+/* ---------- account identity ---------- */
+// Resolve a stable per-account id (Google "sub") from an encrypted session,
+// used to key per-user KV data. Returns null if the session is invalid.
+async function accountId(env, session) {
+  let refresh;
+  try { refresh = await decrypt(session, env.ENC_SECRET); } catch (e) { return null; }
+  const tok = await postForm("https://oauth2.googleapis.com/token", {
+    client_id: env.GOOGLE_CLIENT_ID,
+    client_secret: env.GOOGLE_CLIENT_SECRET,
+    refresh_token: refresh,
+    grant_type: "refresh_token",
+  });
+  if (!tok.access_token) return null;
+  const info = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+    headers: { Authorization: "Bearer " + tok.access_token },
+  }).then((r) => r.json()).catch(() => ({}));
+  return info.sub || info.email || null;
+}
 
 /* ---------- Plaid helpers ---------- */
 function plaidBase(env) { return "https://" + (env.PLAID_ENV || "sandbox") + ".plaid.com"; }
