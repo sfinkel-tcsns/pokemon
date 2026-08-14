@@ -1,34 +1,45 @@
-# Calendar command bar — setup
+# Calendar command bar — setup (free)
 
-The Calendar tab has an **AI command bar**: type plain English ("move gym to 6pm
-tomorrow", "add dentist Friday 2pm", "cancel my 3pm") and it edits your Google
-Calendar on the spot. The Worker sends your words to Claude, which turns them
-into a calendar action and applies it; the view refreshes.
+The Calendar tab has a command bar: type a plain instruction and it edits your
+Google Calendar instantly. It runs **entirely free** — the site parses your
+command itself and writes the change straight to Google using your existing
+login. No API keys, no per-command cost.
 
-Three one-time steps:
+## The only step: reconnect once
 
-## 1. Get an Anthropic API key
-1. Go to **https://console.anthropic.com** → **API Keys** → create one.
-2. Add a little credit (each command is a fraction of a cent — Haiku is cheap).
+The site currently has **read-only** calendar access. To let it make changes,
+re-approve with the write permission:
 
-## 2. Add it to the Worker + deploy
-1. Worker → **Settings → Variables and Secrets** → add:
-   - `ANTHROPIC_API_KEY` = your key **(Secret)**
-   - *(optional)* `ANTHROPIC_MODEL` = a model id to override the default
-2. Paste the latest `backend/worker.js` and **Deploy** (it adds the `/calendar/act`
-   route and the calendar **write** scope). Your other setup is untouched.
+1. Make sure your Worker is running the latest `backend/worker.js` (the one that
+   added the `calendar.events` scope — if the command bar is visible, you have it).
+2. On the dashboard: **Disconnect**, then **Connect Google Calendar** again, and
+   approve the Google screen (it now asks for calendar **edit** access).
 
-## 3. Reconnect once (to grant calendar editing)
-The site currently only has **read** access to your calendar. To let it make
-changes, you have to re-approve with the new permission:
-- On the dashboard, **Disconnect**, then **Connect Google Calendar** again, and
-  approve the Google consent screen (it'll now ask for calendar edit access).
-- That's it — the command bar goes live.
+That's it. If a command ever returns "Reconnect the dashboard to grant calendar
+edit access," you skipped this — reconnect and retry.
 
-### Notes
-- If a command returns "Reconnect the dashboard to grant calendar edit access,"
-  you skipped step 3 — reconnect and retry.
-- It reads your events for the next ~3 weeks to know which one you mean when you
-  say "move my 3pm" — so it can move/rename/delete existing events, not just add.
-- Everything runs through your Worker; your Google tokens never touch the browser
-  in the clear, same as the rest of the app.
+## What it understands
+
+Give it a clear instruction. Examples:
+
+- `add dentist Friday 2pm`
+- `add coffee with Eric tomorrow 11:30am`
+- `schedule gym at 6pm`
+- `move gym to 6pm tomorrow`
+- `reschedule Clickster time to 2pm`
+- `rename gym to workout`
+- `cancel Lunch + read` / `delete my dentist appointment`
+
+Patterns: **add / schedule** `<title> <day> <time>` · **move / reschedule**
+`<event> to <day/time>` · **rename** `<event> to <new title>` · **cancel /
+delete** `<event>`. Days can be `today`, `tomorrow`, a weekday (`friday`,
+`next monday`), or a date (`aug 20`, `8/20`). Times like `2pm`, `11:30am`,
+`noon`, `15:00`. New events default to 1 hour.
+
+Because it's a pattern parser (not an AI), keep commands reasonably structured —
+loose phrasing like "push my afternoon around" won't work. It finds existing
+events by matching the words you use against your upcoming calendar.
+
+> Prefer full natural-language freedom? The Worker also has an optional AI route
+> (`/calendar/act`) — add an `ANTHROPIC_API_KEY` and it'll handle any phrasing
+> for a fraction of a cent per command. The free parser above needs neither.

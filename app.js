@@ -1150,8 +1150,142 @@ function renderTasks() {
 /* ---------- Calendar (Today / Week / Upcoming under one tab) ---------- */
 let CAL_MODE = "today";
 const CAL_MODES = [["today", "Today"], ["week", "Week"], ["upcoming", "Upcoming"]];
+/* ---------- Calendar command: free client-side parser ---------- */
+const CAL_TZ = (window.LIFEOS_CONFIG && window.LIFEOS_CONFIG.timeZone) || "America/Chicago";
+const CAL_WD = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+const CAL_MON = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+function ymdAdd(ymd, n) { const d = new Date(ymd + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function ymdDow(ymd) { return new Date(ymd + "T00:00:00Z").getUTCDay(); }
+function fmtHM(hm) { const [h, m] = hm.split(":").map(Number); const ap = h >= 12 ? "pm" : "am"; const hh = ((h + 11) % 12) + 1; return hh + (m ? ":" + String(m).padStart(2, "0") : "") + ap; }
+// Add ms to a wall-clock (date, "HH:MM") without touching the browser timezone.
+function wallAdd(ymd, hm, ms) {
+  const [Y, Mo, D] = ymd.split("-").map(Number), [h, mi] = hm.split(":").map(Number);
+  const d = new Date(Date.UTC(Y, Mo - 1, D, h, mi, 0)); d.setTime(d.getTime() + ms);
+  return d.toISOString().slice(0, 16);
+}
+function parseTimeToken(s) {
+  s = s.toLowerCase();
+  if (/\bnoon\b/.test(s)) return "12:00";
+  if (/\bmidnight\b/.test(s)) return "00:00";
+  const m = /\b(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)\b/.exec(s)
+    || /\bat\s+(\d{1,2})(?::(\d{2}))?\b/.exec(s)
+    || /\b(\d{1,2}):(\d{2})\b/.exec(s);
+  if (!m) return null;
+  let h = +m[1], min = m[2] ? +m[2] : 0; const ap = (m[3] || "")[0];
+  if (ap === "p" && h < 12) h += 12;
+  if (ap === "a" && h === 12) h = 0;
+  if (h > 23 || min > 59) return null;
+  return String(h).padStart(2, "0") + ":" + String(min).padStart(2, "0");
+}
+function parseDateToken(s) {
+  s = s.toLowerCase(); const today = todayKey();
+  if (/\btoday\b|\btonight\b/.test(s)) return today;
+  if (/\btomorrow\b|\btmrw\b/.test(s)) return ymdAdd(today, 1);
+  const nextPref = /\bnext\s/.test(s);
+  for (let i = 0; i < 7; i++) {
+    if (new RegExp("\\b" + CAL_WD[i].slice(0, 3) + "[a-z]*\\b").test(s)) {
+      const cur = ymdDow(today); let diff = (i - cur + 7) % 7; if (diff === 0) diff = 7;
+      if (nextPref && diff < 7) diff += 7;
+      return ymdAdd(today, diff);
+    }
+  }
+  let m = /\b([a-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?\b/.exec(s);
+  if (m) { const mi = CAL_MON.findIndex((x) => x.startsWith(m[1])); if (mi >= 0) { const y = +today.slice(0, 4); let d = `${y}-${String(mi + 1).padStart(2, "0")}-${String(+m[2]).padStart(2, "0")}`; if (d < today) d = `${y + 1}-${String(mi + 1).padStart(2, "0")}-${String(+m[2]).padStart(2, "0")}`; return d; } }
+  m = /\b(\d{1,2})\/(\d{1,2})\b/.exec(s);
+  if (m) { const y = +today.slice(0, 4); let d = `${y}-${String(+m[1]).padStart(2, "0")}-${String(+m[2]).padStart(2, "0")}`; if (d < today) d = `${y + 1}-${String(+m[1]).padStart(2, "0")}-${String(+m[2]).padStart(2, "0")}`; return d; }
+  return null;
+}
+function cleanQuery(s) { return s.replace(/\b(my|the|event|meeting|appt|appointment)\b/gi, " ").replace(/\s+/g, " ").trim(); }
+function buildCreate(rest) {
+  const time = parseTimeToken(rest), date = parseDateToken(rest);
+  if (!time && !date) return { error: "When? Try “add dentist Friday 2pm”." };
+  const monRe = new RegExp("\\b(?:" + CAL_MON.map((mm) => mm.slice(0, 3)).join("|") + ")[a-z]*\\s+\\d{1,2}(?:st|nd|rd|th)?\\b", "gi");
+  let title = rest
+    .replace(/\bat\s+\d{1,2}(?::\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.)?\b/gi, " ")   // "at 3", "at 3:30pm"
+    .replace(/\b\d{1,2}(?::\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.)\b/gi, " ")          // "3pm", "11:30am"
+    .replace(/\b\d{1,2}:\d{2}\b/g, " ")                                          // "15:00"
+    .replace(/\b(noon|midnight)\b/gi, " ")
+    .replace(monRe, " ")                                                          // "aug 20"
+    .replace(/\b\d{1,2}\/\d{1,2}\b/g, " ")                                       // "8/20"
+    .replace(/\b(mon|tue|wed|thu|fri|sat|sun)[a-z]*\b/gi, " ")
+    .replace(/\b(today|tonight|tomorrow|tmrw|next|on|from|this)\b/gi, " ")
+    .replace(/\s+/g, " ").trim().replace(/^(a|an|the)\s+/i, "");
+  if (!title) title = "Event";
+  return { action: "create", title: title.charAt(0).toUpperCase() + title.slice(1), time, date };
+}
+function parseCalCommand(text) {
+  const t = text.trim(); let m;
+  if ((m = /^(?:delete|cancel|remove|clear)\s+(.+)/i.exec(t))) return { action: "delete", query: cleanQuery(m[1]) };
+  if ((m = /^rename\s+(.+?)\s+to\s+(.+)/i.exec(t))) return { action: "update", query: cleanQuery(m[1]), newTitle: m[2].trim() };
+  if ((m = /^(?:move|reschedule|resched|push|shift|change)\s+(.+?)\s+to\s+(.+)/i.exec(t))) {
+    const time = parseTimeToken(m[2]), date = parseDateToken(m[2]);
+    if (!time && !date) return { error: "Move it to when? e.g. “move gym to 6pm tomorrow”." };
+    return { action: "update", query: cleanQuery(m[1]), time, date };
+  }
+  if ((m = /^(?:add|create|schedule|new|book|set\s?up|put)\s+(.+)/i.exec(t))) return buildCreate(m[1]);
+  if (parseTimeToken(t) || parseDateToken(t)) return buildCreate(t);
+  return { error: "Try “add dentist Friday 2pm”, “move gym to 6pm”, or “cancel lunch”." };
+}
+async function findCalEvent(CAL, H, query) {
+  const timeMin = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  const timeMax = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString();
+  const u = CAL + "?singleEvents=true&orderBy=startTime&maxResults=25&q=" + encodeURIComponent(query) +
+    "&timeMin=" + encodeURIComponent(timeMin) + "&timeMax=" + encodeURIComponent(timeMax);
+  const r = await fetch(u, { headers: H });
+  if (!r.ok) return null;
+  const items = (await r.json()).items || [];
+  const q = query.toLowerCase();
+  return items.find((e) => (e.summary || "").toLowerCase().includes(q)) || items[0] || null;
+}
+// Parse + apply a calendar command directly against Google Calendar (free).
+async function runCalCommand(text) {
+  const p = parseCalCommand(text);
+  if (p.error) return { ok: false, message: p.error };
+  let token;
+  try { token = await LifeOSSession.getToken(); } catch (e) { return { ok: false, message: "Sign in first." }; }
+  const CAL = "https://www.googleapis.com/calendar/v3/calendars/primary/events";
+  const H = { Authorization: "Bearer " + token };
+  const HJ = Object.assign({ "content-type": "application/json" }, H);
+  const scope403 = "Reconnect the dashboard (Disconnect → Connect) to grant calendar edit access, then retry.";
+  try {
+    if (p.action === "create") {
+      let start, end;
+      if (p.date && !p.time) { start = { date: p.date }; end = { date: ymdAdd(p.date, 1) }; }
+      else { const d = p.date || todayKey(), tm = p.time || "09:00"; start = { dateTime: `${d}T${tm}:00`, timeZone: CAL_TZ }; end = { dateTime: wallAdd(d, tm, 3600000) + ":00", timeZone: CAL_TZ }; }
+      const r = await fetch(CAL, { method: "POST", headers: HJ, body: JSON.stringify({ summary: p.title, start, end }) });
+      if (r.status === 403) return { ok: false, message: scope403 };
+      if (!r.ok) return { ok: false, message: "Calendar rejected that (" + r.status + ")." };
+      return { ok: true, message: `Added “${p.title}”${p.date ? " " + p.date : ""}${p.time ? " at " + fmtHM(p.time) : ""}.` };
+    }
+    const ev = await findCalEvent(CAL, H, p.query);
+    if (!ev) return { ok: false, message: `Couldn't find an event matching “${p.query}”.` };
+    if (p.action === "delete") {
+      const r = await fetch(CAL + "/" + encodeURIComponent(ev.id), { method: "DELETE", headers: H });
+      if (r.status === 403) return { ok: false, message: scope403 };
+      if (!r.ok && r.status !== 410) return { ok: false, message: "Couldn't delete (" + r.status + ")." };
+      return { ok: true, message: `Deleted “${ev.summary || "event"}”.` };
+    }
+    const body = {};
+    if (p.newTitle) body.summary = p.newTitle;
+    if (p.time || p.date) {
+      const timed = !!(ev.start && ev.start.dateTime);
+      const curDate = ev.start && (timed ? ev.start.dateTime.slice(0, 10) : ev.start.date) || todayKey();
+      const curTime = timed ? ev.start.dateTime.slice(11, 16) : "09:00";
+      const nd = p.date || curDate, nt = p.time || curTime;
+      let durMs = 3600000;
+      if (timed && ev.end && ev.end.dateTime) durMs = new Date(ev.end.dateTime) - new Date(ev.start.dateTime);
+      body.start = { dateTime: `${nd}T${nt}:00`, timeZone: CAL_TZ };
+      body.end = { dateTime: wallAdd(nd, nt, durMs) + ":00", timeZone: CAL_TZ };
+    }
+    const r = await fetch(CAL + "/" + encodeURIComponent(ev.id), { method: "PATCH", headers: HJ, body: JSON.stringify(body) });
+    if (r.status === 403) return { ok: false, message: scope403 };
+    if (!r.ok) return { ok: false, message: "Couldn't update (" + r.status + ")." };
+    return { ok: true, message: `Updated “${p.newTitle || ev.summary || "event"}”.` };
+  } catch (e) { return { ok: false, message: String((e && e.message) || e) }; }
+}
+
 function calCmdBar() {
-  const can = window.LifeOSSession && LifeOSSession.enabled() && LifeOSSession.hasSession() && LifeOSSession.calendarAct;
+  const can = window.LifeOSSession && LifeOSSession.enabled() && LifeOSSession.hasSession() && LifeOSSession.getToken;
   if (!can) return "";
   return `<form class="cal-cmd" id="calCmd" autocomplete="off">
     <span class="cal-cmd-spark">✨</span>
@@ -1178,7 +1312,7 @@ function submitCalCmd() {
   if (btn) { btn.disabled = true; btn.textContent = "…"; }
   let st = document.getElementById("calCmdStatus");
   if (st) { st.textContent = "Working on it…"; st.className = "cal-cmd-status working"; }
-  LifeOSSession.calendarAct(text).then(async (res) => {
+  runCalCommand(text).then(async (res) => {
     await refreshCalendar().catch(() => {});   // reload events + re-render
     st = document.getElementById("calCmdStatus"); // re-query (view was rebuilt)
     if (st) { st.textContent = (res.ok === false ? "⚠️ " : "✓ ") + (res.message || "Done."); st.className = "cal-cmd-status " + (res.ok === false ? "err" : "ok"); }
