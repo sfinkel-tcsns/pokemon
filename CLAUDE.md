@@ -54,6 +54,14 @@ re-architecting the dashboard. Full payload shape + the one-line browser call
 are in `YOUTUBE-FEED.md`. The **morning brief** (news/needs-you/quote/music)
 works the same way via the `/brief` route — the site pulls the freshest brief on
 load and shows a "as of <date>" note until a new one is pushed. See `BRIEF-FEED.md`.
+**Money** (Rocket Money → net worth/spending/subs) works the same via `/money` —
+see `MONEY-FEED.md`.
+
+Division of labor: **the browser/dispatch feeds everything dynamic** it can read
+(Gmail, news, music, Rocket Money, YouTube Studio) by POSTing to the Worker;
+the site displays it. Calendar and Canvas come in live on their own via OAuth /
+the Worker proxy, so they need no feed. Everything is one KV store keyed to the
+Google account.
 
 ## Setup docs
 
@@ -62,6 +70,7 @@ load and shows a "as of <date>" note until a new one is pushed. See `BRIEF-FEED.
 - `MONEY-SETUP.md` — Plaid bank sync
 - `YOUTUBE-FEED.md` — the morning Studio-metrics feed
 - `BRIEF-FEED.md` — the morning brief feed (news / needs-you / music / quote)
+- `MONEY-FEED.md` — the morning Money feed (Rocket Money → net worth / spending / subs)
 
 ## Guardrails
 

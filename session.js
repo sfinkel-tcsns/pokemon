@@ -154,6 +154,33 @@ window.LifeOSSession = (function () {
     return true;
   }
 
+  // Money (net worth / spending / subscriptions) pushed by your daily run
+  // reading Rocket Money in the browser. Stored per Google account.
+  async function getMoney() {
+    if (!enabled() || !hasSession()) return undefined;
+    try {
+      const r = await fetch(base() + "/money", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ session: localStorage.getItem(KEY) }),
+      });
+      if (!r.ok) return undefined;
+      const j = await r.json();
+      return j.money;   // null = none stored yet; object = the money data
+    } catch (e) { return undefined; }
+  }
+  async function putMoney(money) {
+    if (!enabled()) throw new Error("No backend configured.");
+    if (!hasSession()) throw new Error("Not connected — open the dashboard and sign in first.");
+    const r = await fetch(base() + "/money", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ session: localStorage.getItem(KEY), money: money || {} }),
+    });
+    if (!r.ok) throw new Error("Money save failed (" + r.status + ")");
+    return true;
+  }
+
   // Canvas assignments (via the Worker proxy). Returns [] or null if unavailable.
   async function getCanvas() {
     if (!enabled() || !hasSession()) return null;
@@ -169,5 +196,5 @@ window.LifeOSSession = (function () {
     } catch (e) { return null; }
   }
 
-  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState, getYouTubeFeed, putYouTubeFeed, getBrief, putBrief };
+  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState, getYouTubeFeed, putYouTubeFeed, getBrief, putBrief, getMoney, putMoney };
 })();

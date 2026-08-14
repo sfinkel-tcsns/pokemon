@@ -435,6 +435,18 @@ async function fetchBrief() {
   if (CURRENT === "morning") render();       // render() also refreshes the date subtitle
 }
 
+// Pull the money data pushed by your morning run (Rocket Money). Falls back to
+// Plaid (if connected) or the sample seed when none is stored.
+async function fetchMoney() {
+  if (!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.getMoney)) return;
+  let m;
+  try { m = await LifeOSSession.getMoney(); } catch (e) { return; }
+  if (!m || typeof m !== "object") return;   // null/none → keep Plaid/sample
+  LIVE_MONEY = m;
+  try { localStorage.setItem("lifeos-money-fed", JSON.stringify(m)); } catch (e) {}
+  if (CURRENT === "money") renderMoney();
+}
+
 function applyLiveYT(live) {
   const snap = window.YOUTUBE_DATA || {};
   const mergedAudience = Object.assign({}, snap.audience, {
@@ -881,8 +893,11 @@ function render() {
 function switchView(name) {
   CURRENT = name;
   render();
-  // Opening Money with banks connected → quietly pull fresh numbers.
-  if (name === "money" && window.LifeOSPlaid && window.LifeOSPlaid.hasItems()) refreshMoney();
+  // Opening Money → pull the dispatch feed (and Plaid, if connected).
+  if (name === "money") {
+    fetchMoney();
+    if (window.LifeOSPlaid && window.LifeOSPlaid.hasItems()) refreshMoney();
+  }
 }
 
 /* ---------- sync label + connection UI ---------- */
@@ -969,8 +984,10 @@ function goDisconnect() {
 function boot() {
   renderLegend();
 
-  // Show last-known live money instantly; a refresh happens when the tab opens.
-  if (window.LifeOSPlaid && window.LifeOSPlaid.cache()) LIVE_MONEY = window.LifeOSPlaid.cache();
+  // Show last-known money instantly; a refresh happens when the tab opens.
+  // Prefer the dispatch-fed cache, then Plaid's.
+  try { const f = JSON.parse(localStorage.getItem("lifeos-money-fed")); if (f) LIVE_MONEY = f; } catch (e) {}
+  if (!LIVE_MONEY && window.LifeOSPlaid && window.LifeOSPlaid.cache()) LIVE_MONEY = window.LifeOSPlaid.cache();
 
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.addEventListener("click", () => switchView(b.dataset.view)));
@@ -1010,6 +1027,7 @@ function boot() {
     if (window.LifeOSYouTube) refreshYouTube().catch(() => {});
     fetchBrief();                             // freshest morning brief
     fetchStudio();                            // morning Studio-only metrics feed
+    fetchMoney();                             // Rocket Money feed
     pullDoneCloud();                          // sync checked-off to-dos across devices
   } else {
     if (window.LifeOSGoogle && LifeOSGoogle.isConfigured()) {
@@ -1028,6 +1046,7 @@ function boot() {
       if (!(YT_DATA && YT_DATA.live)) refreshYouTube().catch(() => {});
       fetchBrief();                           // refresh the brief
       fetchStudio();                          // refresh Studio metrics
+      fetchMoney();                           // refresh money
       pullDoneCloud();                        // pick up checks made on other devices
       return;
     }
