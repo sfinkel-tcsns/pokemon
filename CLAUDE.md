@@ -51,14 +51,17 @@ It scrapes Studio (behind his login) and POSTs the numbers to the Worker's
 the site to do this** — the API genuinely cannot provide those fields, and the
 static site + Worker already exist and work. Dispatch's job is the feed, not
 re-architecting the dashboard. Full payload shape + the one-line browser call
-are in `YOUTUBE-FEED.md`.
+are in `YOUTUBE-FEED.md`. The **morning brief** (news/needs-you/quote/music)
+works the same way via the `/brief` route — the site pulls the freshest brief on
+load and shows a "as of <date>" note until a new one is pushed. See `BRIEF-FEED.md`.
 
 ## Setup docs
 
 - `SETUP.md` / `BACKEND-SETUP.md` — Google OAuth + the permanent-login Worker
-- `SYNC-SETUP.md` — `LIFEOS_KV` binding (powers to-do sync **and** the YouTube feed)
+- `SYNC-SETUP.md` — `LIFEOS_KV` binding (powers to-do sync + the YouTube & brief feeds)
 - `MONEY-SETUP.md` — Plaid bank sync
 - `YOUTUBE-FEED.md` — the morning Studio-metrics feed
+- `BRIEF-FEED.md` — the morning brief feed (news / needs-you / music / quote)
 
 ## Guardrails
 

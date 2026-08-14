@@ -127,6 +127,33 @@ window.LifeOSSession = (function () {
     return true;
   }
 
+  // Morning brief pushed by your daily run (news, needs-you, quote, music…).
+  // Stored per Google account so the freshest brief shows on every device.
+  async function getBrief() {
+    if (!enabled() || !hasSession()) return undefined;
+    try {
+      const r = await fetch(base() + "/brief", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ session: localStorage.getItem(KEY) }),
+      });
+      if (!r.ok) return undefined;
+      const j = await r.json();
+      return j.brief;   // null = none stored yet; object = the brief
+    } catch (e) { return undefined; }
+  }
+  async function putBrief(brief) {
+    if (!enabled()) throw new Error("No backend configured.");
+    if (!hasSession()) throw new Error("Not connected — open the dashboard and sign in first.");
+    const r = await fetch(base() + "/brief", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ session: localStorage.getItem(KEY), brief: brief || {} }),
+    });
+    if (!r.ok) throw new Error("Brief save failed (" + r.status + ")");
+    return true;
+  }
+
   // Canvas assignments (via the Worker proxy). Returns [] or null if unavailable.
   async function getCanvas() {
     if (!enabled() || !hasSession()) return null;
@@ -142,5 +169,5 @@ window.LifeOSSession = (function () {
     } catch (e) { return null; }
   }
 
-  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState, getYouTubeFeed, putYouTubeFeed };
+  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState, getYouTubeFeed, putYouTubeFeed, getBrief, putBrief };
 })();

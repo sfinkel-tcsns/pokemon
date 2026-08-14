@@ -423,6 +423,18 @@ async function fetchStudio() {
   if (CURRENT === "youtube") renderYouTube();
 }
 
+// Pull the freshest morning brief pushed by your morning run (backend session
+// required). Falls back silently to the committed seed if none is stored.
+async function fetchBrief() {
+  if (!(window.LifeOSSession && LifeOSSession.hasSession && LifeOSSession.hasSession() && LifeOSSession.getBrief)) return;
+  let b;
+  try { b = await LifeOSSession.getBrief(); } catch (e) { return; }
+  if (!b || typeof b !== "object") return;   // null/none → keep seed
+  window.BRIEF_DATA = b;
+  updateNeedCount();
+  if (CURRENT === "morning") render();       // render() also refreshes the date subtitle
+}
+
 function applyLiveYT(live) {
   const snap = window.YOUTUBE_DATA || {};
   const mergedAudience = Object.assign({}, snap.audience, {
@@ -619,8 +631,10 @@ function renderMorning() {
   const doNow = watchAll.filter(isNow);
   const keepEye = watchAll.filter((w) => !isNow(w));
 
+  const stale = B.date && B.date < todayKey();
   view.innerHTML = `
     <div class="brief">
+      ${stale ? `<div class="brief-stale">📅 Showing your brief from ${prettyDate(B.date)} — today's arrives with your morning run.</div>` : ""}
       <div class="quote-card">
         <div class="quote-text">“${escapeHtml(B.quote.text)}”</div>
         <div class="quote-author">— ${escapeHtml(B.quote.author)}</div>
@@ -994,6 +1008,7 @@ function boot() {
     // Permanent backend login — one session, no popups, ever.
     refreshCalendar().catch(() => {});
     if (window.LifeOSYouTube) refreshYouTube().catch(() => {});
+    fetchBrief();                             // freshest morning brief
     fetchStudio();                            // morning Studio-only metrics feed
     pullDoneCloud();                          // sync checked-off to-dos across devices
   } else {
@@ -1011,6 +1026,7 @@ function boot() {
     if (backendActive()) {
       if (!STATE.live) refreshCalendar().catch(() => {});
       if (!(YT_DATA && YT_DATA.live)) refreshYouTube().catch(() => {});
+      fetchBrief();                           // refresh the brief
       fetchStudio();                          // refresh Studio metrics
       pullDoneCloud();                        // pick up checks made on other devices
       return;

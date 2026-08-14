@@ -196,6 +196,27 @@ export default {
       return cors(json({ metrics: raw ? JSON.parse(raw) : null }), site);
     }
 
+    // 7) Morning brief. Your daily run generates a fresh brief and POSTs it;
+    //    the site GETs it and renders it in place of the committed seed.
+    //    KV-backed, keyed to your Google account. Needs LIFEOS_KV.
+    //      POST /brief { session }          -> { brief: <obj|null> }
+    //      POST /brief { session, brief }   -> { ok: true }
+    if (url.pathname === "/brief" && request.method === "POST") {
+      if (!env.LIFEOS_KV) return cors(json({ error: "State store not configured" }, 400), site);
+      let body = {};
+      try { body = await request.json(); } catch (e) {}
+      if (!body.session) return cors(json({ error: "no session" }, 400), site);
+      const uid = await accountId(env, body.session);
+      if (!uid) return cors(json({ error: "unauthorized" }, 401), site);
+      const key = "brief:" + uid;
+      if (body.brief !== undefined) {
+        await env.LIFEOS_KV.put(key, JSON.stringify(body.brief));
+        return cors(json({ ok: true }), site);
+      }
+      const raw = await env.LIFEOS_KV.get(key);
+      return cors(json({ brief: raw ? JSON.parse(raw) : null }), site);
+    }
+
     /* ---------- Money: Plaid bank sync ---------- */
 
     // P1) Mint a Link token — opens the Plaid popup on the site.
