@@ -740,10 +740,12 @@ function renderMorning() {
       ${creator}
       <div class="brief-grid">
         <div class="brief-main">
-          ${td && (td.guides || td.references) ? `
-          <div class="sec-label">How to make it</div>
+          ${td && (td.guides || td.references || td.titles || td.thumbnailText) ? `
+          <div class="sec-label">Make it — starter kit</div>
           <div class="make-card">
-            ${(td.guides || []).length ? `<ul class="make-guides">${(td.guides || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul>` : ""}
+            ${(td.titles || []).length ? `<div class="make-sub">Title · A/B test</div><div class="make-titles">${(td.titles || []).slice(0, 2).map((t, i) => `<div class="make-title"><span class="ab">${i === 0 ? "A" : "B"}</span>${escapeHtml(t)}</div>`).join("")}</div>` : ""}
+            ${(td.thumbnailText || []).length ? `<div class="make-sub">Thumbnail text</div><div class="thumb-texts">${(td.thumbnailText || []).map((t) => `<span class="thumb-text">${escapeHtml(t)}</span>`).join("")}</div>` : ""}
+            ${(td.guides || []).length ? `<div class="make-sub">How to make it</div><ul class="make-guides">${(td.guides || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul>` : ""}
             ${(td.references || []).length ? `<div class="make-refs">${(td.references || []).map((r) => `<a href="${escapeHtml(r.url || "#")}" target="_blank" rel="noopener">🔗 ${escapeHtml(r.title || r.url)}</a>`).join("")}</div>` : ""}
             <div class="make-note">You'll do your own thing — this is just a starting point.</div>
           </div>` : ""}

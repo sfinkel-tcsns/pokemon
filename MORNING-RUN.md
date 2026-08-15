@@ -20,8 +20,10 @@ own — leave them alone.)
   upload is doing (title, views, CTR, likes, and a one-line verdict vs his averages).
   `creator.today`: the video he should make TODAY, following his cadence (e.g. he
   posts "X" → today he makes "Y"), with angle, hook, thumbnail idea, why it fits his
-  analytics, 3–4 production guides, and a couple of reference links. This drives the
-  landing page.
+  analytics, 3–4 production guides, and a couple of reference links. Also include a
+  **title A/B pair** (`titles`, 2 options) and **thumbnail text options**
+  (`thumbnailText`, punchy 2–4 word overlays) — the on-page pre-production kit.
+  This drives the landing page.
 - **News** — one main headline (with a real article URL) + **3 "For you"** cards:
   one YouTube/creator, one AI, one career/internship. Tune to Simon: creator ×
   AI, film school at Chapman, internship hunting.

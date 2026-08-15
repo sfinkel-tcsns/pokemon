@@ -16,6 +16,11 @@ window.BRIEF_DATA = {
     },
     "today": {
       "title": "Becoming Spider-Man in VR for 24 Hours",
+      "titles": [
+        "Becoming Spider-Man in VR for 24 Hours",
+        "I Was Spider-Man in VR for 24 Hours (Gone Too Far)"
+      ],
+      "thumbnailText": ["24 HOURS AS SPIDER-MAN", "VR BROKE ME", "I BECAME SPIDER-MAN"],
       "angle": "24-hour immersion challenge — live the Spider-Man fantasy in VR.",
       "hook": "I spent 24 hours becoming Spider-Man in VR — and it broke me.",
       "thumbnailIdea": "You in a VR headset mid web-swing, shocked face, bold “24 HOURS”, city skyline behind.",
