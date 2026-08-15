@@ -1237,8 +1237,29 @@ async function findCalEvent(CAL, H, query) {
   const q = query.toLowerCase();
   return items.find((e) => (e.summary || "").toLowerCase().includes(q)) || items[0] || null;
 }
+// Minutes-from-midnight of an ISO time, in the calendar's timezone.
+function localMinutes(iso) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", { timeZone: CAL_TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(iso));
+    return (+parts.find((p) => p.type === "hour").value) * 60 + (+parts.find((p) => p.type === "minute").value);
+  } catch (e) { return -1; }
+}
+function hmToMin(hm) { return (+hm.slice(0, 2)) * 60 + (+hm.slice(3, 5)); }
+// First existing event on `dayK` that overlaps [sMin,eMin) — for conflict warnings.
+function calConflict(dayK, sMin, eMin, excludeTitle) {
+  const evs = (STATE.byDay && STATE.byDay[dayK]) || [];
+  for (const e of evs) {
+    if (e.allDay) continue;
+    if (excludeTitle && (e.title || "").toLowerCase() === excludeTitle.toLowerCase()) continue;
+    const s = localMinutes(e.start), en = localMinutes(e.end);
+    if (s >= 0 && s < eMin && en > sMin) return e;
+  }
+  return null;
+}
+
 // Parse + apply a calendar command directly against Google Calendar (free).
-async function runCalCommand(text) {
+// `force` skips the conflict check (used by the "Do it anyway" confirm).
+async function runCalCommand(text, force) {
   const p = parseCalCommand(text);
   if (p.error) return { ok: false, message: p.error };
   let token;
@@ -1251,7 +1272,11 @@ async function runCalCommand(text) {
     if (p.action === "create") {
       let start, end;
       if (p.date && !p.time) { start = { date: p.date }; end = { date: ymdAdd(p.date, 1) }; }
-      else { const d = p.date || todayKey(), tm = p.time || "09:00"; start = { dateTime: `${d}T${tm}:00`, timeZone: CAL_TZ }; end = { dateTime: wallAdd(d, tm, 3600000) + ":00", timeZone: CAL_TZ }; }
+      else {
+        const d = p.date || todayKey(), tm = p.time || "09:00";
+        if (!force) { const c = calConflict(d, hmToMin(tm), hmToMin(tm) + 60); if (c) return { conflict: true, message: `${fmtHM(tm)} overlaps “${c.title || "an event"}”. Add anyway?` }; }
+        start = { dateTime: `${d}T${tm}:00`, timeZone: CAL_TZ }; end = { dateTime: wallAdd(d, tm, 3600000) + ":00", timeZone: CAL_TZ };
+      }
       const r = await fetch(CAL, { method: "POST", headers: HJ, body: JSON.stringify({ summary: p.title, start, end }) });
       if (r.status === 403) return { ok: false, message: scope403 };
       if (!r.ok) return { ok: false, message: "Calendar rejected that (" + r.status + ")." };
@@ -1274,6 +1299,7 @@ async function runCalCommand(text) {
       const nd = p.date || curDate, nt = p.time || curTime;
       let durMs = 3600000;
       if (timed && ev.end && ev.end.dateTime) durMs = new Date(ev.end.dateTime) - new Date(ev.start.dateTime);
+      if (!force) { const durMin = Math.max(15, Math.round(durMs / 60000)); const c = calConflict(nd, hmToMin(nt), hmToMin(nt) + durMin, ev.summary); if (c) return { conflict: true, message: `${fmtHM(nt)} overlaps “${c.title || "an event"}”. Move anyway?` }; }
       body.start = { dateTime: `${nd}T${nt}:00`, timeZone: CAL_TZ };
       body.end = { dateTime: wallAdd(nd, nt, durMs) + ":00", timeZone: CAL_TZ };
     }
@@ -1301,28 +1327,50 @@ function renderCalendar() {
 }
 // Send a natural-language calendar command, then refresh the view.
 let CAL_CMD_BUSY = false;
+function setCalStatus(content, cls, isHtml) {
+  const st = document.getElementById("calCmdStatus");
+  if (!st) return null;
+  if (isHtml) st.innerHTML = content; else st.textContent = content;
+  st.className = "cal-cmd-status " + (cls || "");
+  return st;
+}
+function calCmdEnable(text) {
+  const i = document.getElementById("calCmdInput");
+  if (i) { i.disabled = false; if (text != null) i.value = text; i.focus(); }
+  const b = document.querySelector("#calCmd .cal-cmd-btn");
+  if (b) { b.disabled = false; b.textContent = "Go"; }
+}
 function submitCalCmd() {
-  if (CAL_CMD_BUSY) return;
   const inp = document.getElementById("calCmdInput");
   const text = inp && inp.value.trim();
   if (!text) return;
+  runAndReport(text, false);
+}
+function runAndReport(text, force) {
+  if (CAL_CMD_BUSY) return;
   CAL_CMD_BUSY = true;
+  const inp = document.getElementById("calCmdInput");
   const btn = document.querySelector("#calCmd .cal-cmd-btn");
   if (inp) inp.disabled = true;
   if (btn) { btn.disabled = true; btn.textContent = "…"; }
-  let st = document.getElementById("calCmdStatus");
-  if (st) { st.textContent = "Working on it…"; st.className = "cal-cmd-status working"; }
-  runCalCommand(text).then(async (res) => {
-    await refreshCalendar().catch(() => {});   // reload events + re-render
-    st = document.getElementById("calCmdStatus"); // re-query (view was rebuilt)
-    if (st) { st.textContent = (res.ok === false ? "⚠️ " : "✓ ") + (res.message || "Done."); st.className = "cal-cmd-status " + (res.ok === false ? "err" : "ok"); }
+  setCalStatus("Working on it…", "working");
+  runCalCommand(text, force).then(async (res) => {
+    if (res.conflict && !force) {
+      const st = setCalStatus("⚠️ " + escapeHtml(res.message) + ' <button class="cal-cmd-force" type="button">Do it anyway</button>', "warn", true);
+      if (st) st.dataset.text = text;
+      calCmdEnable(text);
+      return;
+    }
+    if (res.ok) {
+      await refreshCalendar().catch(() => {});   // reload events + rebuild the bar
+      setCalStatus("✓ " + (res.message || "Done."), "ok");
+    } else {
+      setCalStatus("⚠️ " + (res.message || "Couldn't do that."), "err");
+      calCmdEnable(text);
+    }
   }).catch((err) => {
-    st = document.getElementById("calCmdStatus");
-    if (st) { st.textContent = "⚠️ " + (err.message || err); st.className = "cal-cmd-status err"; }
-    const i2 = document.getElementById("calCmdInput");
-    if (i2) { i2.disabled = false; i2.value = text; i2.focus(); }
-    const b2 = document.querySelector("#calCmd .cal-cmd-btn");
-    if (b2) { b2.disabled = false; b2.textContent = "Go"; }
+    setCalStatus("⚠️ " + (err.message || err), "err");
+    calCmdEnable(text);
   }).finally(() => { CAL_CMD_BUSY = false; });
 }
 function calSub() {
@@ -1534,6 +1582,14 @@ function boot() {
     if (!(e.target && e.target.id === "calCmd")) return;
     e.preventDefault();
     submitCalCmd();
+  });
+  // "Do it anyway" — apply despite a conflict warning.
+  document.addEventListener("click", (e) => {
+    const f = e.target.closest && e.target.closest(".cal-cmd-force");
+    if (!f) return;
+    const st = document.getElementById("calCmdStatus");
+    const text = st && st.dataset.text;
+    if (text) runAndReport(text, true);
   });
 
   loadData(window.CALENDAR_DATA || { events: [] });   // start from snapshot
