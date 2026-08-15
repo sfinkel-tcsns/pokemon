@@ -745,6 +745,8 @@ function renderMorning() {
           <div class="make-card">
             ${(td.titles || []).length ? `<div class="make-sub">Title · A/B test</div><div class="make-titles">${(td.titles || []).slice(0, 2).map((t, i) => `<div class="make-title"><span class="ab">${i === 0 ? "A" : "B"}</span>${escapeHtml(t)}</div>`).join("")}</div>` : ""}
             ${(td.thumbnailText || []).length ? `<div class="make-sub">Thumbnail text</div><div class="thumb-texts">${(td.thumbnailText || []).map((t) => `<span class="thumb-text">${escapeHtml(t)}</span>`).join("")}</div>` : ""}
+            ${td.thumbnailImage ? `<div class="make-sub">Thumbnail reference</div><a class="thumb-ref" href="${escapeHtml(td.thumbnailImage)}" target="_blank" rel="noopener"><img src="${escapeHtml(td.thumbnailImage)}" alt="Thumbnail reference" loading="lazy" /></a>` : ""}
+            ${(td.thumbnailConcepts || []).length ? `<div class="make-sub">Thumbnail concepts</div><ol class="thumb-concepts">${(td.thumbnailConcepts || []).map((c) => `<li>${escapeHtml(c)}</li>`).join("")}</ol>` : ""}
             ${(td.guides || []).length ? `<div class="make-sub">How to make it</div><ul class="make-guides">${(td.guides || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul>` : ""}
             ${(td.references || []).length ? `<div class="make-refs">${(td.references || []).map((r) => `<a href="${escapeHtml(r.url || "#")}" target="_blank" rel="noopener">🔗 ${escapeHtml(r.title || r.url)}</a>`).join("")}</div>` : ""}
             <div class="make-note">You'll do your own thing — this is just a starting point.</div>

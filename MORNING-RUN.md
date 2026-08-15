@@ -22,7 +22,9 @@ own — leave them alone.)
   posts "X" → today he makes "Y"), with angle, hook, thumbnail idea, why it fits his
   analytics, 3–4 production guides, and a couple of reference links. Also include a
   **title A/B pair** (`titles`, 2 options) and **thumbnail text options**
-  (`thumbnailText`, punchy 2–4 word overlays) — the on-page pre-production kit.
+  (`thumbnailText`, punchy 2–4 word overlays), 2–3 **thumbnail concepts**
+  (`thumbnailConcepts`, described compositions), and optionally a generated
+  **`thumbnailImage`** URL (public https) — the on-page pre-production kit.
   This drives the landing page.
 - **News** — one main headline (with a real article URL) + **3 "For you"** cards:
   one YouTube/creator, one AI, one career/internship. Tune to Simon: creator ×

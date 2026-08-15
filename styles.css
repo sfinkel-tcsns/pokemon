@@ -688,6 +688,11 @@ body {
   background: color-mix(in srgb, var(--c-social) 16%, transparent);
   border: 1px solid color-mix(in srgb, var(--c-social) 34%, transparent);
 }
+.thumb-concepts { margin: 0 0 4px 18px; padding: 0; }
+.thumb-concepts li { font-size: 13px; line-height: 1.55; margin-bottom: 8px; color: var(--text-dim); }
+.thumb-concepts li::marker { color: var(--c-social); font-weight: 700; }
+.thumb-ref { display: block; margin-bottom: 4px; }
+.thumb-ref img { display: block; width: 100%; max-width: 420px; border-radius: var(--radius-sm); border: 1px solid var(--line); }
 .make-guides { margin: 0 0 4px 18px; padding: 0; }
 .make-guides li { font-size: 13.5px; line-height: 1.6; margin-bottom: 6px; }
 .make-refs { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }

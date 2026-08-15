@@ -45,6 +45,8 @@ keys. Summary:
       "title": "Becoming Spider-Man in VR for 24 Hours",
       "titles": ["Option A title", "Option B title"],   // A/B pair to test
       "thumbnailText": ["24 HOURS AS SPIDER-MAN", "VR BROKE ME"],  // punchy 2–4 word overlays
+      "thumbnailConcepts": ["SPLIT — …", "CLOSE-UP — …", "POV — …"],  // 2–3 described compositions
+      "thumbnailImage": "https://…",   // OPTIONAL generated reference image URL (must be public https)
       "angle": "…", "hook": "…", "thumbnailIdea": "…",
       "why": "why it fits his analytics (Spider-Man is his #1 lane with new viewers)",
       "guides": [ "3–4 concrete production tips grounded in his data (TV thumbnails, retention checkpoints…)" ],
