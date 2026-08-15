@@ -629,6 +629,63 @@ function taskRow(w) {
   return needRow({ key: w.url || w.title, url: w.url, extraClass: "task", title: w.title, why: w.note, when: whenLabel(w) });
 }
 
+function timeAgo(ymd) { const d = -daysUntil(ymd); return d <= 0 ? "today" : d === 1 ? "yesterday" : d + "d ago"; }
+function crStat(val, label) { return val == null ? "" : `<span class="cr-stat"><b>${escapeHtml(String(val))}</b> ${escapeHtml(label)}</span>`; }
+// The creator command center: how your latest video is doing + what to make today.
+function creatorHero(c) {
+  if (!c) return "";
+  const L = c.latest, T = c.today;
+  const latest = L ? `
+    <a class="cr-card cr-latest" href="${escapeHtml(L.url || "#")}" target="_blank" rel="noopener">
+      <div class="cr-kicker">▶ Your latest${L.publishedAt ? " · posted " + timeAgo(L.publishedAt) : ""}</div>
+      <div class="cr-title">${escapeHtml(L.title || "")}</div>
+      <div class="cr-stats">
+        ${crStat(L.views != null ? fmtNum(L.views) : null, "views")}
+        ${crStat(L.ctr != null ? L.ctr + "%" : null, "CTR")}
+        ${crStat(L.likes != null ? fmtNum(L.likes) : null, "likes")}
+        ${crStat(L.comments != null ? fmtNum(L.comments) : null, "comments")}
+      </div>
+      ${L.note ? `<div class="cr-note">${escapeHtml(L.note)}</div>` : ""}
+    </a>` : "";
+  const today = T ? `
+    <div class="cr-card cr-today">
+      <div class="cr-kicker make">🎬 Make today</div>
+      <div class="cr-title">${escapeHtml(T.title || "")}</div>
+      ${T.hook ? `<div class="cr-hook">“${escapeHtml(T.hook)}”</div>` : ""}
+      ${T.angle ? `<div class="cr-line"><b>Angle</b> ${escapeHtml(T.angle)}</div>` : ""}
+      ${T.thumbnailIdea ? `<div class="cr-line"><b>Thumbnail</b> ${escapeHtml(T.thumbnailIdea)}</div>` : ""}
+      ${T.why ? `<div class="cr-why">${escapeHtml(T.why)}</div>` : ""}
+    </div>` : "";
+  return (latest || today) ? `<div class="creator-hero">${latest}${today}</div>` : "";
+}
+
+// News tab — moved out of the morning landing.
+function renderNews() {
+  const B = window.BRIEF_DATA;
+  const stats = document.getElementById("stats");
+  const view = document.getElementById("view");
+  stats.innerHTML = "";
+  if (!B || !B.headline) { view.innerHTML = `<div class="empty">No news yet — it arrives with your morning run.</div>`; return; }
+  const forYou = (B.forYou || []).map((f) => `
+    <div class="fy-card">
+      <span class="fy-tag" style="background:${f.color}22;color:${f.color}">${escapeHtml(f.tag)}</span>
+      <div class="fy-text">${escapeHtml(f.text)}</div>
+      <div class="fy-action">→ ${escapeHtml(f.action)}</div>
+      ${f.url ? `<a class="fy-src" href="${escapeHtml(f.url)}" target="_blank" rel="noopener">source ↗</a>` : ""}
+    </div>`).join("");
+  view.innerHTML = `
+    <div class="news-wrap">
+      <div class="sec-label">Today's headline</div>
+      <a class="headline-card" href="${escapeHtml(B.headline.url)}" target="_blank" rel="noopener">
+        <div class="headline-title">${escapeHtml(B.headline.title)}</div>
+        <div class="headline-sum">${escapeHtml(B.headline.summary)}</div>
+        <div class="headline-src">${escapeHtml(B.headline.source)} ↗</div>
+      </a>
+      <div class="sec-label">For you</div>
+      <div class="fy-grid">${forYou}</div>
+    </div>`;
+}
+
 function renderMorning() {
   const B = window.BRIEF_DATA;
   document.getElementById("stats").innerHTML = "";
@@ -658,13 +715,7 @@ function renderMorning() {
     musicHtml = `<div class="soon-card">🎧 ${escapeHtml(music.note || "Apple Music — coming.")}</div>`;
   }
 
-  const forYou = (B.forYou || []).map((f) => `
-    <div class="fy-card">
-      <span class="fy-tag" style="background:${f.color}22;color:${f.color}">${escapeHtml(f.tag)}</span>
-      <div class="fy-text">${escapeHtml(f.text)}</div>
-      <div class="fy-action">→ ${escapeHtml(f.action)}</div>
-      ${f.url ? `<a class="fy-src" href="${escapeHtml(f.url)}" target="_blank" rel="noopener">source ↗</a>` : ""}
-    </div>`).join("");
+  const creator = creatorHero(B.creator);
 
   const dm = loadDismissed();
   const ny = B.needsYou || { count: 0, items: [] };
@@ -682,23 +733,24 @@ function renderMorning() {
   const keepEye = watchAll.filter((w) => !isNow(w));
 
   const stale = B.date && B.date < todayKey();
+  const td = (B.creator && B.creator.today) || null;
   view.innerHTML = `
     <div class="brief">
       ${stale ? `<div class="brief-stale">📅 Showing your brief from ${prettyDate(B.date)} — today's arrives with your morning run.</div>` : ""}
-      <div class="quote-card">
-        <div class="quote-text">“${escapeHtml(B.quote.text)}”</div>
-        <div class="quote-author">— ${escapeHtml(B.quote.author)}</div>
-      </div>
+      ${creator}
       <div class="brief-grid">
         <div class="brief-main">
-          <div class="sec-label">Today's headline</div>
-          <a class="headline-card" href="${escapeHtml(B.headline.url)}" target="_blank" rel="noopener">
-            <div class="headline-title">${escapeHtml(B.headline.title)}</div>
-            <div class="headline-sum">${escapeHtml(B.headline.summary)}</div>
-            <div class="headline-src">${escapeHtml(B.headline.source)} ↗</div>
-          </a>
-          <div class="sec-label">For you</div>
-          <div class="fy-grid">${forYou}</div>
+          ${td && (td.guides || td.references) ? `
+          <div class="sec-label">How to make it</div>
+          <div class="make-card">
+            ${(td.guides || []).length ? `<ul class="make-guides">${(td.guides || []).map((g) => `<li>${escapeHtml(g)}</li>`).join("")}</ul>` : ""}
+            ${(td.references || []).length ? `<div class="make-refs">${(td.references || []).map((r) => `<a href="${escapeHtml(r.url || "#")}" target="_blank" rel="noopener">🔗 ${escapeHtml(r.title || r.url)}</a>`).join("")}</div>` : ""}
+            <div class="make-note">You'll do your own thing — this is just a starting point.</div>
+          </div>` : ""}
+          <div class="quote-card small">
+            <div class="quote-text">“${escapeHtml(B.quote.text)}”</div>
+            <div class="quote-author">— ${escapeHtml(B.quote.author)}</div>
+          </div>
         </div>
         <div class="brief-side">
           <div class="sec-label">My tasks <a class="sec-link" data-view="tasks">all ↗</a></div>
@@ -1384,6 +1436,7 @@ let CURRENT = "morning";
 const MORNING_TITLE = "Good morning" + (window.BRIEF_DATA && window.BRIEF_DATA.greetingName ? ", " + window.BRIEF_DATA.greetingName : "");
 const VIEWS = {
   morning:  { title: MORNING_TITLE, sub: () => (window.BRIEF_DATA ? new Date(window.BRIEF_DATA.date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" }) : ""), render: renderMorning },
+  news:     { title: "News",      sub: () => "Headlines + what pertains to you", render: renderNews },
   calendar: { title: () => ({ today: "Today", week: "This Week", upcoming: "Upcoming" }[CAL_MODE]), sub: calSub, render: renderCalendar },
   youtube:  { title: "YouTube",   sub: () => (window.YOUTUBE_DATA ? window.YOUTUBE_DATA.channel.title + " · analytics + daily ideas" : ""), render: renderYouTube },
   money:    { title: "Money",     sub: () => (window.MONEY_DATA ? "Net worth · budget · subscriptions" : ""), render: renderMoney },
@@ -1397,9 +1450,9 @@ function render() {
   document.querySelectorAll(".nav-item[data-view]").forEach((b) =>
     b.classList.toggle("active", b.dataset.view === CURRENT));
 
-  if (CURRENT === "morning" || CURRENT === "youtube" || CURRENT === "money" || CURRENT === "school" || CURRENT === "tasks") {
+  if (CURRENT === "morning" || CURRENT === "youtube" || CURRENT === "money" || CURRENT === "school" || CURRENT === "tasks" || CURRENT === "news") {
     document.getElementById("legend").innerHTML = "";
-    if (CURRENT === "money" || CURRENT === "tasks") document.getElementById("stats").innerHTML = "";
+    if (CURRENT === "money" || CURRENT === "tasks" || CURRENT === "news") document.getElementById("stats").innerHTML = "";
     v.render();
     return;
   }

@@ -35,6 +35,20 @@ keys. Summary:
 {
   "date": "2026-08-14",              // MUST be today — drives the header + stale check
   "greetingName": "Simon",
+  "creator": {                       // the MORNING HERO — first thing he sees
+    "latest": {                      // how his newest upload is doing
+      "title": "…", "url": "https://youtu.be/…", "publishedAt": "2026-08-15",
+      "views": 3800, "likes": 340, "comments": 51, "ctr": 9.1, "impressions": 42000,
+      "note": "One-line verdict vs his averages (CTR 8.3% / RPM ~$0.9) and where traffic's coming from."
+    },
+    "today": {                       // the video he should make TODAY (next in his cadence)
+      "title": "Becoming Spider-Man in VR for 24 Hours",
+      "angle": "…", "hook": "…", "thumbnailIdea": "…",
+      "why": "why it fits his analytics (Spider-Man is his #1 lane with new viewers)",
+      "guides": [ "3–4 concrete production tips grounded in his data (TV thumbnails, retention checkpoints…)" ],
+      "references": [ { "title": "…", "url": "https://…" } ]
+    }
+  },
   "quote": { "text": "…", "author": "Jake the Dog · Adventure Time" },
   "headline": { "title": "…", "summary": "…", "source": "…", "url": "https://…" },
   "forYou": [                        // 3 cards: YouTube / AI / Career, tuned to Simon

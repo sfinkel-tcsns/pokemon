@@ -2,6 +2,36 @@ window.BRIEF_DATA = {
   "date": "2026-08-13",
   "greetingName": "Simon",
   "generatedAt": "2026-08-13T06:00:00-05:00",
+  "creator": {
+    "latest": {
+      "title": "The BEST Roblox Spider-Man Game Yet...",
+      "url": "https://www.youtube.com/@clickster",
+      "publishedAt": "2026-08-15",
+      "views": 3800,
+      "likes": 340,
+      "comments": 51,
+      "ctr": 9.1,
+      "impressions": 42000,
+      "note": "Strong open — 9.1% CTR is above your 8.3% average and Browse is pushing it. The Spider-Man + Venom hook is landing with new viewers."
+    },
+    "today": {
+      "title": "Becoming Spider-Man in VR for 24 Hours",
+      "angle": "24-hour immersion challenge — live the Spider-Man fantasy in VR.",
+      "hook": "I spent 24 hours becoming Spider-Man in VR — and it broke me.",
+      "thumbnailIdea": "You in a VR headset mid web-swing, shocked face, bold “24 HOURS”, city skyline behind.",
+      "why": "Rides your #1 lane (Spider-Man with new viewers) plus VR novelty for the click.",
+      "guides": [
+        "Hook in the first 15s: headset on, first swing, a real reaction — no long intro.",
+        "Structure as hour milestones (Hour 1 / 6 / 12 / 24) so retention has checkpoints.",
+        "Bold, TV-legible thumbnail — 53% of your watch time is on TVs.",
+        "End on the 24-hour payoff and tease tomorrow's video to pull the subscribe."
+      ],
+      "references": [
+        { "title": "Spider-Man VR gameplay — swing feel & arcs", "url": "https://www.youtube.com/results?search_query=spider-man+vr+gameplay" },
+        { "title": "“24 hours in VR” challenge format examples", "url": "https://www.youtube.com/results?search_query=24+hours+in+vr+challenge" }
+      ]
+    }
+  },
   "quote": {
     "text": "Sucking at something is the first step toward being sorta good at something.",
     "author": "Jake the Dog · Adventure Time"
