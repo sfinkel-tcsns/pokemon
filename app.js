@@ -633,7 +633,8 @@ function timeAgo(ymd) { const d = -daysUntil(ymd); return d <= 0 ? "today" : d =
 function crStat(val, label) { return val == null ? "" : `<span class="cr-stat"><b>${escapeHtml(String(val))}</b> ${escapeHtml(label)}</span>`; }
 // The creator command center: how your latest video is doing + what to make today.
 function creatorHero(c) {
-  if (!c) return "";
+  const empty = `<div class="creator-hero"><div class="cr-card cr-empty">📹 <b>Your creator brief lands here</b> — how your latest video is doing and exactly what to make today — after your morning run pushes it. <span>Run dispatch, or it fills at 5am.</span></div></div>`;
+  if (!c || (!c.latest && !c.today)) return empty;
   const L = c.latest, T = c.today;
   const latest = L ? `
     <a class="cr-card cr-latest" href="${escapeHtml(L.url || "#")}" target="_blank" rel="noopener">

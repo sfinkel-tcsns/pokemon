@@ -664,6 +664,10 @@ body {
 .cr-latest { border-left: 3px solid var(--c-social); }
 .cr-latest:hover { border-color: var(--c-social); }
 .cr-today { border-left: 3px solid var(--accent); background: linear-gradient(180deg, var(--accent-soft), transparent 60%), var(--bg-elev); }
+.creator-hero:has(.cr-empty) { grid-template-columns: 1fr; }
+.cr-empty { grid-column: 1 / -1; font-size: 13.5px; color: var(--text-dim); line-height: 1.55; border-left: 3px solid var(--accent); }
+.cr-empty b { color: var(--text); }
+.cr-empty span { color: var(--text-faint); }
 .cr-kicker { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; color: var(--c-social); }
 .cr-kicker.make { color: var(--accent); }
 .cr-title { font-size: 19px; font-weight: 750; line-height: 1.25; margin: 7px 0 12px; letter-spacing: -0.01em; }
