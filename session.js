@@ -208,27 +208,6 @@ window.LifeOSSession = (function () {
     return true;
   }
 
-  // Natural-language calendar edit — sends plain English to the Worker, which
-  // uses Claude to create/move/rename/delete a Google Calendar event.
-  async function calendarAct(text) {
-    if (!enabled()) throw new Error("No backend configured.");
-    if (!hasSession()) throw new Error("Not connected — sign in first.");
-    const r = await fetch(base() + "/calendar/act", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        session: localStorage.getItem(KEY),
-        text,
-        timeZone: (window.LIFEOS_CONFIG && window.LIFEOS_CONFIG.timeZone) || undefined,
-        now: new Date().toISOString(),
-      }),
-    });
-    let j = {};
-    try { j = await r.json(); } catch (e) {}
-    if (!r.ok || j.error) throw new Error(j.error || ("Calendar action failed (" + r.status + ")"));
-    return j;   // { ok, message }
-  }
-
   // Canvas assignments (via the Worker proxy). Returns [] or null if unavailable.
   async function getCanvas() {
     if (!enabled() || !hasSession()) return null;
@@ -244,5 +223,5 @@ window.LifeOSSession = (function () {
     } catch (e) { return null; }
   }
 
-  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState, getYouTubeFeed, putYouTubeFeed, getBrief, putBrief, getMoney, putMoney, getSchool, putSchool, calendarAct };
+  return { enabled, hasSession, connect, getToken, disconnect, getCanvas, getState, putState, getYouTubeFeed, putYouTubeFeed, getBrief, putBrief, getMoney, putMoney, getSchool, putSchool };
 })();
